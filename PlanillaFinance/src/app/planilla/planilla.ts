@@ -57,7 +57,6 @@ export class PlanillaComponent implements OnInit {
     currentMonth: string = '';
     currentYear: number = new Date().getFullYear();
 
-    // Modal Details
     showDetailModal: boolean = false;
     selectedEmployee: PayrollEmployee | null = null;
 

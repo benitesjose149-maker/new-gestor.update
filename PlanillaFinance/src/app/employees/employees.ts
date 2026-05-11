@@ -68,7 +68,6 @@ export class GestionEmpleadosComponent {
     searchingDni: boolean = false;
     isViewOnly: boolean = false;
 
-    // Leave modal
     showLeaveModal: boolean = false;
     leaveReason: string = '';
     selectedEmployeeForLeave: any = null;
