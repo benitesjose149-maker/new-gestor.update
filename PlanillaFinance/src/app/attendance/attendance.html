@@ -1,0 +1,267 @@
+<div class="attendance-container">
+    <div class="attendance-header">
+        <div class="header-titles">
+            <h1>Registro de asistencia Biometrica</h1>
+            <p>Monitoreo diario de la asistencia y puntualidad de los empleados.</p>
+        </div>
+        <div class="header-actions">
+            <div class="search-box">
+                <i class="fa-solid fa-search"></i>
+                <input type="text" placeholder="Buscar empleado..." [(ngModel)]="searchText" (input)="filterData()">
+            </div>
+        </div>
+    </div>
+
+    <div class="summary-widgets">
+        <div class="widget-card total">
+            <div class="widget-icon"><i class="fa-solid fa-users"></i></div>
+            <div class="widget-info">
+                <h3>Total Empleados</h3>
+                <span class="widget-value">{{ attendanceData.length }}</span>
+            </div>
+        </div>
+        <div class="widget-card present">
+            <div class="widget-icon"><i class="fa-solid fa-check-circle"></i></div>
+            <div class="widget-info">
+                <h3>Asistencias</h3>
+                <span class="widget-value">{{ presentToday }}</span>
+            </div>
+        </div>
+        <div class="widget-card late">
+            <div class="widget-icon"><i class="fa-solid fa-clock"></i></div>
+            <div class="widget-info">
+                <h3>Tardanzas</h3>
+                <span class="widget-value">{{ lateToday }}</span>
+            </div>
+        </div>
+        <div class="widget-card absent">
+            <div class="widget-icon"><i class="fa-solid fa-times-circle"></i></div>
+            <div class="widget-info">
+                <h3>Faltas</h3>
+                <span class="widget-value">{{ absentToday }}</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="table-container">
+        <table class="attendance-table">
+            <thead>
+                <tr>
+                    <th>Empleado</th>
+                    <th>Marcaciones</th>
+                    <th>Horas Totales</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let emp of displayedData" class="attendance-row"
+                    [class.row-absent]="emp.status === 'Falta' && emp.clockIn === '-- : --'">
+                    <td>
+                        <div class="emp-profile-wrapper interactive-name" (click)="openEmployeeModal(emp)"
+                            style="display: flex; align-items: center; gap: 1rem; cursor: pointer; transition: all 0.2s;">
+                            <div class="emp-avatar">{{ getInitials(emp.name) }}</div>
+                            <div class="emp-details">
+                                <span class="emp-name" style="color: #3b82f6; text-decoration: underline;">{{
+                                    emp.name
+                                    }}</span>
+                                <span class="emp-role">{{ emp.role }} · <small>{{ emp.department }}</small></span>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="clock-times-wrapper" style="display: flex; gap: 1.5rem;">
+                            <div class="time-block">
+                                <span class="time-label">ENTRADA</span>
+                                <span class="time-value" [class.danger]="emp.status === 'Falta'"
+                                    [class.warning]="emp.status === 'Tarde'">{{ emp.clockIn }}</span>
+                            </div>
+                            <div class="time-block">
+                                <span class="time-label">SALIDA</span>
+                                <span class="time-value" [class.danger]="emp.status === 'Falta'">{{emp.clockOut}}</span>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="total-hours-cell">
+                        <div class="hours-info">
+                            <span class="hours-text">{{ emp.totalHours }}</span>
+                            <span class="pending-badge">{{ emp.rawTotalHours }}</span>
+                        </div>
+                        <div class="progress-bar-bg" *ngIf="emp.status !== 'Falta'">
+                            <div class="progress-fill" [style.width]="emp.status === 'Falta' ? '0%' : '100%'"
+                                [class.bg-success]="emp.status === 'Puntual'"
+                                [class.bg-warning]="emp.status === 'Tarde'"></div>
+                        </div>
+                    </td>
+                    <td class="status-cell">
+                        <span class="status-badge" [class.badge-success]="emp.status === 'Puntual'"
+                            [class.badge-warning]="emp.status === 'Tarde'" [class.badge-danger]="emp.status === 'Falta'"
+                            [class.badge-info]="emp.status === 'Justificado'">
+                            {{ emp.status | uppercase }}
+                        </span>
+                    </td>
+                    <td>
+                        <div class="actions-wrapper" style="display: flex; gap: 0.75rem;">
+                            <button class="action-btn text-primary" title="Ver Detalles"
+                                (click)="openEmployeeModal(emp)">
+                                <i class="fa-solid fa-eye"></i>
+                            </button>
+                            <button class="action-btn text-success" title="Justificar"
+                                *ngIf="emp.status === 'Falta' || emp.status === 'Tarde' || emp.status === 'Justificado'"
+                                (click)="openJustifyModal(emp)">
+                                <i class="fa-solid fa-shield-halved"></i>
+                            </button>
+                            <button class="action-btn text-info" title="Exportar Reporte"
+                                (click)="exportEmployeeReport(emp)">
+                                <i class="fa-solid fa-file-pdf"></i>
+                            </button>
+                            <button class="action-btn text-warning" title="Añadir Observación"
+                                (click)="openObservationModal(emp)">
+                                <i class="fa-solid fa-comment-dots"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                <tr *ngIf="displayedData.length === 0">
+                    <td colspan="5" class="empty-state text-center">
+                        No se encontraron registros biométricos para este día.
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="custom-modal-overlay" *ngIf="isModalOpen" (click)="closeModal()">
+        <div class="custom-modal-content" (click)="$event.stopPropagation()">
+            <div class="modal-header">
+                <div class="modal-emp-info" *ngIf="selectedEmployee">
+                    <div class="emp-avatar large">{{ getInitials(selectedEmployee.name) }}</div>
+                    <div>
+                        <h2>{{ selectedEmployee.name }}</h2>
+                        <p>Historial del Mes • {{ selectedEmployee.role }}</p>
+                    </div>
+                </div>
+                <button class="close-btn" (click)="closeModal()"><i class="fa-solid fa-times"></i></button>
+            </div>
+
+            <div class="modal-body">
+                <table class="attendance-table nested-table">
+                    <thead>
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Entrada</th>
+                            <th>Salida</th>
+                            <th>Total Horas</th>
+                            <th>Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let record of selectedEmployeeHistory"
+                            [class.row-non-working]="record.isNonWorking">
+                            <td class="date-col">
+                                <strong>{{ record.date | date:'dd MMM' }}</strong>
+                                <small>{{ record.date | date:'EEEE' }}</small>
+                            </td>
+                            <td>{{ record.clockIn }}</td>
+                            <td>{{ record.clockOut }}</td>
+                            <td><strong>{{ record.totalHours }}</strong></td>
+                            <td>
+                                <span class="status-badge" [class.badge-success]="record.status === 'Puntual'"
+                                    [class.badge-warning]="record.status === 'Tarde'"
+                                    [class.badge-danger]="record.status === 'Falta'"
+                                    [class.badge-info]="record.status === 'Justificado'"
+                                    [class.badge-neutral]="record.isNonWorking">
+                                    {{ record.status | uppercase }}
+                                </span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="custom-modal-overlay" *ngIf="isJustifyModalOpen" (click)="closeJustifyModal()">
+        <div class="custom-modal-content small-modal" (click)="$event.stopPropagation()">
+            <div class="modal-header">
+                <div class="modal-emp-info">
+                    <i class="fa-solid fa-shield-halved text-success" style="font-size: 1.5rem;"></i>
+                    <div>
+                        <h2>Justificar Asistencia</h2>
+                        <p>{{ selectedEmployeeForJustify?.name }} • {{ selectedEmployeeForJustify?.status }}</p>
+                    </div>
+                </div>
+                <button class="close-btn" (click)="closeJustifyModal()"><i class="fa-solid fa-times"></i></button>
+            </div>
+
+            <div class="modal-body justify-body" style="padding: 1.5rem 2rem;">
+                <div class="form-group" style="margin-bottom: 1.5rem;">
+                    <label style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: #475569;">Tipo de
+                        Justificación</label>
+                    <select [(ngModel)]="justificationData.documentType"
+                        style="width: 100%; padding: 0.75rem; border: 1px solid #cbd5e1; border-radius: 8px; font-family: inherit;">
+                        <option>Certificado Médico</option>
+                        <option>Permiso Administrativo</option>
+                        <option>Problemas de Transporte</option>
+                        <option>Falla de Biométrico</option>
+                        <option>Otro</option>
+                    </select>
+                </div>
+
+                <div class="form-group" style="margin-bottom: 1.5rem;">
+                    <label style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: #475569;">Motivo /
+                        Observación</label>
+                    <textarea [(ngModel)]="justificationData.reason"
+                        placeholder="Describa el motivo de la justificación..." rows="4"
+                        style="width: 100%; padding: 0.75rem; border: 1px solid #cbd5e1; border-radius: 8px; font-family: inherit; resize: none;"></textarea>
+                </div>
+
+                <div class="modal-footer"
+                    style="display: flex; justify-content: flex-end; gap: 1rem; margin-top: 1rem;">
+                    <button class="btn-cancel" (click)="closeJustifyModal()">
+                        Cancelar
+                    </button>
+                    <button class="btn-submit" (click)="submitJustification()">
+                        Guardar Justificación
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="custom-modal-overlay" *ngIf="isObservationModalOpen" (click)="closeObservationModal()">
+        <div class="custom-modal-content small-modal" (click)="$event.stopPropagation()">
+            <div class="modal-header">
+                <div class="modal-emp-info">
+                    <i class="fa-solid fa-comment-dots text-warning" style="font-size: 1.5rem;"></i>
+                    <div>
+                        <h2>Observaciones Internas</h2>
+                        <p>{{ selectedEmployeeForObservation?.name }} • {{ selectedEmployeeForObservation?.role }}
+                        </p>
+                    </div>
+                </div>
+                <button class="close-btn" (click)="closeObservationModal()"><i class="fa-solid fa-times"></i></button>
+            </div>
+
+            <div class="modal-body" style="padding: 1.5rem 2rem;">
+                <div class="form-group" style="margin-bottom: 1.5rem;">
+                    <label style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: #475569;">Escribir
+                        Nota / Observación</label>
+                    <textarea [(ngModel)]="observationText"
+                        placeholder="Añada notas relevantes sobre la asistencia o conducta del empleado..." rows="6"
+                        style="width: 100%; padding: 0.75rem; border: 1px solid #cbd5e1; border-radius: 8px; font-family: inherit; resize: none;"></textarea>
+                </div>
+
+                <div class="modal-footer"
+                    style="display: flex; justify-content: flex-end; gap: 1rem; margin-top: 1rem;">
+                    <button class="btn-cancel" (click)="closeObservationModal()">
+                        Cancelar
+                    </button>
+                    <button class="btn-submit" (click)="saveObservation()" style="background: #f59e0b;">
+                        Guardar Nota
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

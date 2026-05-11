@@ -1,0 +1,230 @@
+<div class="settings-container">
+    <div class="settings-header">
+        <h2>Gestión de Accesos y Permisos</h2>
+        <p>Como Super Admin, puedes activar o desactivar el acceso a los módulos para cada administrador.</p>
+    </div>
+
+    <div class="users-table-container">
+        <div *ngIf="loading" class="loading">Cargando usuarios...</div>
+
+        <table *ngIf="!loading" class="users-table">
+            <thead>
+                <tr>
+                    <th>Email</th>
+                    <th>Nombre</th>
+                    <th>Rol</th>
+                    <th class="text-center">Dashboard</th>
+                    <th class="text-center">Empleados</th>
+                    <th class="text-center">Archivados</th>
+                    <th class="text-center">Planilla</th>
+                    <th class="text-center">Pagos</th>
+                    <th class="text-center">Vacaciones</th>
+                    <th class="text-center">Movimientos</th>
+                    <th class="text-center">Asistencia</th>
+                    <th class="text-center">Finanzas</th>
+                    <th class="text-center">Acción</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let user of users">
+                    <td class="user-email">
+                        <strong>{{ user.EMAIL }}</strong>
+                    </td>
+                    <td>
+                        <input type="text" [value]="user.FULL_NAME || ''"
+                            (change)="updateName(user, $any($event.target).value)" class="name-input"
+                            placeholder="Nombre del usuario">
+                    </td>
+                    <td>
+                        <span class="role-badge" [class.super]="user.ROL === 'SUPER_ADMIN'">
+                            {{ user.ROL }}
+                        </span>
+                    </td>
+                    <td class="text-center">
+                        <label class="switch" *ngIf="user.ROL !== 'SUPER_ADMIN'">
+                            <input type="checkbox" [checked]="user.CAN_DASHBOARD"
+                                (change)="togglePermission(user, 'CAN_DASHBOARD')">
+                            <span class="slider round"></span>
+                        </label>
+                        <span *ngIf="user.ROL === 'SUPER_ADMIN'" class="full-access">Acceso Total</span>
+                    </td>
+                    <td class="text-center">
+                        <label class="switch" *ngIf="user.ROL !== 'SUPER_ADMIN'">
+                            <input type="checkbox" [checked]="user.CAN_EMPLEADOS"
+                                (change)="togglePermission(user, 'CAN_EMPLEADOS')">
+                            <span class="slider round"></span>
+                        </label>
+                        <span *ngIf="user.ROL === 'SUPER_ADMIN'" class="full-access">Acceso Total</span>
+                    </td>
+                    <td class="text-center">
+                        <label class="switch" *ngIf="user.ROL !== 'SUPER_ADMIN'">
+                            <input type="checkbox" [checked]="user.CAN_ARCHIVADOS"
+                                (change)="togglePermission(user, 'CAN_ARCHIVADOS')">
+                            <span class="slider round"></span>
+                        </label>
+                        <span *ngIf="user.ROL === 'SUPER_ADMIN'" class="full-access">Acceso Total</span>
+                    </td>
+                    <td class="text-center">
+                        <label class="switch" *ngIf="user.ROL !== 'SUPER_ADMIN'">
+                            <input type="checkbox" [checked]="user.CAN_PLANILLA"
+                                (change)="togglePermission(user, 'CAN_PLANILLA')">
+                            <span class="slider round"></span>
+                        </label>
+                        <span *ngIf="user.ROL === 'SUPER_ADMIN'" class="full-access">Acceso Total</span>
+                    </td>
+                    <td class="text-center">
+                        <label class="switch" *ngIf="user.ROL !== 'SUPER_ADMIN'">
+                            <input type="checkbox" [checked]="user.CAN_HISTORIAL"
+                                (change)="togglePermission(user, 'CAN_HISTORIAL')">
+                            <span class="slider round"></span>
+                        </label>
+                        <span *ngIf="user.ROL === 'SUPER_ADMIN'" class="full-access">Acceso Total</span>
+                    </td>
+                    <td class="text-center">
+                        <label class="switch" *ngIf="user.ROL !== 'SUPER_ADMIN'">
+                            <input type="checkbox" [checked]="user.CAN_VACACIONES"
+                                (change)="togglePermission(user, 'CAN_VACACIONES')">
+                            <span class="slider round"></span>
+                        </label>
+                        <span *ngIf="user.ROL === 'SUPER_ADMIN'" class="full-access">Acceso Total</span>
+                    </td>
+                    <td class="text-center">
+                        <label class="switch" *ngIf="user.ROL !== 'SUPER_ADMIN'">
+                            <input type="checkbox" [checked]="user.CAN_MOVIMIENTOS"
+                                (change)="togglePermission(user, 'CAN_MOVIMIENTOS')">
+                            <span class="slider round"></span>
+                        </label>
+                        <span *ngIf="user.ROL === 'SUPER_ADMIN'" class="full-access">Acceso Total</span>
+                    </td>
+                    <td class="text-center">
+                        <label class="switch" *ngIf="user.ROL !== 'SUPER_ADMIN'">
+                            <input type="checkbox" [checked]="user.CAN_ASISTENCIA"
+                                (change)="togglePermission(user, 'CAN_ASISTENCIA')">
+                            <span class="slider round"></span>
+                        </label>
+                        <span *ngIf="user.ROL === 'SUPER_ADMIN'" class="full-access">Acceso Total</span>
+                    </td>
+                    <td class="text-center">
+                        <label class="switch" *ngIf="user.ROL !== 'SUPER_ADMIN'">
+                            <input type="checkbox" [checked]="user.CAN_FINANZAS"
+                                (change)="togglePermission(user, 'CAN_FINANZAS')">
+                            <span class="slider round"></span>
+                        </label>
+                        <span *ngIf="user.ROL === 'SUPER_ADMIN'" class="full-access">Acceso Total</span>
+                    </td>
+                    <td class="text-center">
+                        <button *ngIf="user.ROL !== 'SUPER_ADMIN'" class="delete-btn-user" (click)="deleteUser(user)"
+                            title="Eliminar a {{ user.FULL_NAME || user.EMAIL }}">
+                            🗑️
+                        </button>
+                        <span *ngIf="user.ROL === 'SUPER_ADMIN'" class="protected-badge">🔒</span>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="settings-grid" style="margin-top: 3rem;">
+        <!-- Gestión de Bloqueos (Izquierda) -->
+        <div class="settings-card security-section">
+            <div class="settings-header">
+                <h3>Seguridad: Cuentas Bloqueadas</h3>
+                <p>Cuentas bloqueadas por intentos fallidos (3 intentos en 30 min).</p>
+            </div>
+
+            <div class="users-table-container">
+                <div *ngIf="blockedAccounts.length === 0" class="no-blocks">
+                    No hay cuentas bloqueadas actualmente.
+                </div>
+
+                <table *ngIf="blockedAccounts.length > 0" class="users-table minis">
+                    <thead>
+                        <tr>
+                            <th>Email</th>
+                            <th>IP</th>
+                            <th class="text-center">Fallas</th>
+                            <th>Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let account of blockedAccounts">
+                            <td><strong>{{ account.EMAIL }}</strong></td>
+                            <td><code class="ip-badge">{{ account.IP_ADDRESS }}</code></td>
+                            <td class="text-center"><span class="fail-count">{{ account.Fails }}</span></td>
+                            <td>
+                                <button class="unblock-btn" (click)="unblockAccount(account)">
+                                    Desbloquear
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Creación de Usuarios (Derecha) -->
+        <div class="settings-card create-user-section">
+            <div class="settings-header">
+                <h3>Crear Nuevo Usuario</h3>
+                <p>Asigna un nuevo administrador con accesos específicos.</p>
+            </div>
+
+            <div class="create-user-form">
+                <div class="form-group">
+                    <label>Nombre Completo</label>
+                    <input type="text" [(ngModel)]="newUser.full_name" placeholder="Ej: Dalto Espinoza">
+                </div>
+
+                <div class="form-group">
+                    <label>Email Corporativo</label>
+                    <input type="email" [(ngModel)]="newUser.email" placeholder="ejemplo@hostingweb.pe">
+                </div>
+
+                <div class="form-group">
+                    <label>Password</label>
+                    <div class="password-input-group">
+                        <input type="text" [(ngModel)]="newUser.password" placeholder="Mínimo 8 caracteres">
+                        <button class="generate-btn" (click)="generatePassword()">Generate</button>
+                    </div>
+                </div>
+
+                <div class="permissions-grid">
+                    <label class="perm-item">
+                        <input type="checkbox" [(ngModel)]="newUser.permissions.dashboard"> Panel Principal
+                    </label>
+                    <label class="perm-item">
+                        <input type="checkbox" [(ngModel)]="newUser.permissions.empleados"> Empleados
+                    </label>
+                    <label class="perm-item">
+                        <input type="checkbox" [(ngModel)]="newUser.permissions.archivados"> Archivados
+                    </label>
+                    <label class="perm-item">
+                        <input type="checkbox" [(ngModel)]="newUser.permissions.planilla"> Planilla
+                    </label>
+                    <label class="perm-item">
+                        <input type="checkbox" [(ngModel)]="newUser.permissions.historial"> Pagos
+                    </label>
+                    <label class="perm-item">
+                        <input type="checkbox" [(ngModel)]="newUser.permissions.vacaciones"> Vacaciones
+                    </label>
+                    <label class="perm-item">
+                        <input type="checkbox" [(ngModel)]="newUser.permissions.movimientos"> Movimientos
+                    </label>
+                    <label class="perm-item">
+                        <input type="checkbox" [(ngModel)]="newUser.permissions.asistencia"> Asistencia
+                    </label>
+                    <label class="perm-item">
+                        <input type="checkbox" [(ngModel)]="newUser.permissions.finanzas"> Finanzas
+                    </label>
+                </div>
+
+                <button class="create-btn" [disabled]="creatingUser" (click)="createUser()">
+                    {{ creatingUser ? 'Creando...' : 'Crear Usuario' }}
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Historial de Auditoría (Solo Super Admin) -->
+    <app-activity-logs></app-activity-logs>
+</div>

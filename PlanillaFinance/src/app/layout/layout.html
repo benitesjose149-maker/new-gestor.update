@@ -1,0 +1,103 @@
+<div class="dashboard-container" [class.collapsed]="isSidebarCollapsed" [class.mobile-open]="isMobileMenuOpen">
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <div class="logo-area">
+                <img src="/logo.png" alt="HWPeru Logo" class="logo-img">
+                <span class="logo-text" *ngIf="!isSidebarCollapsed">HWPeru</span>
+            </div>
+            <button class="toggle-btn" (click)="toggleSidebar()">☰</button>
+        </div>
+
+        <nav class="sidebar-nav">
+            <a routerLink="/dashboard" class="nav-item" routerLinkActive="active" *ngIf="hasAccess('dashboard')"
+                (click)="closeMobileMenu()" title="Panel Principal">
+                <i class="fa-solid fa-gauge-high icon"></i>
+                <span class="label" *ngIf="!isSidebarCollapsed">Panel Principal</span>
+            </a>
+            <a routerLink="/employees" class="nav-item" routerLinkActive="active" *ngIf="hasAccess('empleados')"
+                (click)="closeMobileMenu()" title="Empleados">
+                <i class="fa-solid fa-users icon"></i>
+                <span class="label" *ngIf="!isSidebarCollapsed">Empleados</span>
+            </a>
+            <a routerLink="/archived-employees" class="nav-item" routerLinkActive="active"
+                *ngIf="hasAccess('archivados')" (click)="closeMobileMenu()" title="Empleados Archivados">
+                <i class="fa-solid fa-user-slash icon"></i>
+                <span class="label" *ngIf="!isSidebarCollapsed">Emp. Archivados</span>
+            </a>
+            <a routerLink="/planilla" class="nav-item" routerLinkActive="active" *ngIf="hasAccess('planilla')"
+                (click)="closeMobileMenu()" title="Planilla">
+                <i class="fa-solid fa-file-invoice-dollar icon"></i>
+                <span class="label" *ngIf="!isSidebarCollapsed">Planilla</span>
+            </a>
+            <a routerLink="/historial-pago" class="nav-item" routerLinkActive="active" *ngIf="hasAccess('historial')"
+                (click)="closeMobileMenu()" title="Consultar Pagos">
+                <i class="fa-solid fa-money-check-dollar icon"></i>
+                <span class="label" *ngIf="!isSidebarCollapsed">Consultar Pagos</span>
+            </a>
+            <a routerLink="/vacations" class="nav-item" routerLinkActive="active" *ngIf="hasAccess('vacaciones')"
+                (click)="closeMobileMenu()" title="Vacaciones">
+                <i class="fa-solid fa-umbrella-beach icon"></i>
+                <span class="label" *ngIf="!isSidebarCollapsed">Vacaciones</span>
+            </a>
+            <a routerLink="/movements" class="nav-item" routerLinkActive="active" *ngIf="hasAccess('movimientos')"
+                (click)="closeMobileMenu()" title="Movimientos">
+                <i class="fa-solid fa-arrows-rotate icon"></i>
+                <span class="label" *ngIf="!isSidebarCollapsed">Movimientos</span>
+            </a>
+            <a routerLink="/attendance" class="nav-item" routerLinkActive="active" *ngIf="hasAccess('asistencia')"
+                (click)="closeMobileMenu()" title="Asistencia">
+                <i class="fa-solid fa-calendar-check icon"></i>
+                <span class="label" *ngIf="!isSidebarCollapsed">Asistencia</span>
+            </a>
+            <div class="nav-separator" *ngIf="!isSidebarCollapsed && hasAccess('finanzas')">
+                <span class="separator-text">FINANZAS</span>
+            </div>
+            <div class="nav-separator-line" *ngIf="isSidebarCollapsed && hasAccess('finanzas')"></div>
+            <a routerLink="/finance" class="nav-item" routerLinkActive="active" *ngIf="hasAccess('finanzas')"
+                (click)="closeMobileMenu()" title="Control Financiero">
+                <i class="fa-solid fa-wallet icon"></i>
+                <span class="label" *ngIf="!isSidebarCollapsed">Control Financiero</span>
+            </a>
+            <a routerLink="/whmcs-history" class="nav-item" routerLinkActive="active" *ngIf="hasAccess('finanzas')"
+                (click)="closeMobileMenu()" title="Historial de Facturas">
+                <i class="fa-solid fa-receipt icon"></i>
+                <span class="label" *ngIf="!isSidebarCollapsed">Historial de Facturas</span>
+            </a>
+
+            <div class="nav-spacer"></div>
+
+            <a routerLink="/settings" class="nav-item" routerLinkActive="active" *ngIf="isSuperAdmin"
+                (click)="closeMobileMenu()" title="Configuración">
+                <i class="fa-solid fa-gear icon"></i>
+                <span class="label" *ngIf="!isSidebarCollapsed">Configuración</span>
+            </a>
+            <a href="#" (click)="logout($event)" class="nav-item logout" title="Cerrar Sesión">
+                <i class="fa-solid fa-power-off icon"></i>
+                <span class="label" *ngIf="!isSidebarCollapsed">Cerrar Sesión</span>
+            </a>
+        </nav>
+
+        <div class="sidebar-footer" *ngIf="!isSidebarCollapsed">
+            <p>&copy; 2026 HWPeru</p>
+        </div>
+    </aside>
+
+    <div class="sidebar-overlay" (click)="toggleSidebar()"></div>
+
+    <main class="main-content">
+        <header class="top-bar">
+            <button class="mobile-toggle" (click)="toggleSidebar()">☰</button>
+            <h1 class="page-title">Gestión de Planilla</h1>
+            <div class="user-info">
+                <span class="user-name">Hola, {{ userName }}</span>
+                <div class="user-avatar">{{ userName.charAt(0).toUpperCase() }}</div>
+            </div>
+        </header>
+
+        <div class="content-area">
+            <router-outlet></router-outlet>
+        </div>
+    </main>
+</div>
+
+<app-notification></app-notification>

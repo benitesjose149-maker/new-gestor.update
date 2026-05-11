@@ -1,0 +1,29 @@
+# Node modules
+node_modules/
+
+# IDE files
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Build artifacts
+dist/
+build/
+.angular/
+
+# Environment variables
+.env
+secret.json
+
+# Large files and logs
+*.log
+*.tar
+backend/*.tar
+backend/*.log
+git_log.txt
+diff.txt
+push_out.txt
+out.txt

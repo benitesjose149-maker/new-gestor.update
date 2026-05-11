@@ -1,0 +1,208 @@
+<div class="whmcs-history-container">
+    <header class="section-header office-card">
+        <div class="header-main">
+            <h1>Historial de Facturas WHMCS</h1>
+            <p>Consulta de periodos históricos y desglose de comisiones Izipay.</p>
+        </div>
+        <div class="header-filters">
+            <select class="form-select" [(ngModel)]="selectedMonth" (change)="loadHistory()">
+                <option *ngFor="let m of months" [value]="m.id">{{ m.name }}</option>
+            </select>
+            <select class="form-select" [(ngModel)]="selectedYear" (change)="loadHistory()">
+                <option *ngFor="let y of years" [value]="y">{{ y }}</option>
+            </select>
+            <button class="btn btn-primary" (click)="loadHistory()" [disabled]="loading">
+                {{ loading ? 'Cargando...' : 'CONSULTAR' }}
+            </button>
+            <button class="btn btn-success" (click)="loadHistory(true)" [disabled]="syncing">
+                {{ syncing ? 'SINCRONIZANDO...' : 'SINCRONIZAR PERIODO' }}
+            </button>
+        </div>
+    </header>
+
+    <div class="summary-cards" *ngIf="!loading">
+        <div class="card office-card" (click)="openBanksModal()" style="cursor: pointer;">
+            <span class="label">Total Bruto</span>
+            <span class="value text-primary">S/ {{ totalGross | number:'1.2-2' }}</span>
+            <small style="font-size: 0.65rem; color: #94a3b8;">Haga clic para ver bancos</small>
+        </div>
+        <div class="card office-card">
+            <span class="label">Total Comisiones (Fees)</span>
+            <span class="value text-danger">S/ {{ totalFees | number:'1.2-2' }}</span>
+        </div>
+        <div class="card office-card card-egresos">
+            <span class="label">Total Egresos</span>
+            <span class="value text-egreso">S/ {{ totalEgresos | number:'1.2-2' }}</span>
+            <small style="font-size: 0.65rem; color: #94a3b8;">Solo conciliados</small>
+        </div>
+        <div class="card office-card card-neto">
+            <span class="label">Neto Real en Caja</span>
+            <span class="value text-success">S/ {{ totalNet | number:'1.2-2' }}</span>
+        </div>
+    </div>
+
+    <div class="table-container office-card">
+        <div class="table-scroll">
+            <table class="history-table">
+                <thead>
+                    <tr>
+                        <th>ID / Factura</th>
+                        <th>Fecha</th>
+                        <th>Cliente / Concepto</th>
+                        <th>Monto Bruto</th>
+                        <th>Comisión</th>
+                        <th>Monto Neto</th>
+                        <th>Banco / Medio</th>
+                        <th>ESTADO</th>
+                        <th>ACCIÓN</th>
+                    </tr>
+                </thead>
+                <tbody>
+                <tr *ngFor="let inv of invoices" [ngClass]="{'egreso-row': inv.isEgreso}">
+                    <td class="id-cell">
+                        <span *ngIf="!inv.isEgreso" class="invoice-num">#{{ inv.id > 0 ? inv.id : (inv.numFactura || '0') }}</span>
+                        <span *ngIf="inv.isEgreso" class="badge-egreso">EGRESO</span>
+                        <br *ngIf="!inv.isEgreso">
+                        <span *ngIf="!inv.isEgreso" class="badge" [ngClass]="(inv.estado || 'Paid').toLowerCase()">{{ inv.estado || 'PAID' }}</span>
+                    </td>
+                    <td>{{ inv.fecha | date:'dd/MM/yyyy' }}</td>
+                    <td class="client-cell">
+                        <ng-container *ngIf="!inv.isEgreso">
+                            <strong>{{ getClientParts(inv.clienteConcepto).empresa }}</strong>
+                            <br *ngIf="getClientParts(inv.clienteConcepto).empresa">
+                            {{ getClientParts(inv.clienteConcepto).nombre }}
+                            <br>
+                            <small>{{ getClientParts(inv.clienteConcepto).servicio }}</small>
+                        </ng-container>
+                        <ng-container *ngIf="inv.isEgreso">
+                            <strong>{{ inv.comercio }}</strong>
+                            <br>
+                            <small class="text-danger">{{ inv.categoria }}</small>
+                        </ng-container>
+                    </td>
+                    <td class="amount-cell">
+                        <div *ngIf="inv.editing && !inv.isEgreso" class="input-container">
+                            <input type="number" class="cell-input" [(ngModel)]="inv.montoBruto" (ngModelChange)="onMontoBrutoChange(inv)" step="0.01">
+                        </div>
+                        <span *ngIf="!inv.editing || inv.isEgreso">S/ {{ inv.montoBruto | number:'1.2-2' }}</span>
+                    </td>
+                    <td class="fee-cell">
+                        <div *ngIf="inv.editing && !inv.isEgreso" class="input-container">
+                            <input type="number" class="cell-input" [(ngModel)]="inv.comision" (ngModelChange)="onComisionChange(inv)" step="0.01">
+                        </div>
+                        <span class="text-danger" *ngIf="!inv.editing || inv.isEgreso">- S/ {{ inv.comision | number:'1.2-2' }}</span>
+                    </td>
+                    <td class="net-cell"><strong>S/ {{ (inv.montoBruto - inv.comision) | number:'1.2-2' }}</strong></td>
+                    <td>
+                        <span class="bank-tag">{{ inv.banco || '--' }}</span>
+                        <br>
+                        <small class="text-muted" *ngIf="inv.tipoMovimiento">{{ inv.tipoMovimiento }}</small>
+                    </td>
+                    <td>
+                        <select *ngIf="inv.editing" class="cell-select" [(ngModel)]="inv.estadoLocal" (change)="onFieldChange(inv)">
+                            <option *ngFor="let st of transactionStatuses" [value]="st.name">{{ st.name }}</option>
+                        </select>
+                        <span *ngIf="!inv.editing" class="badge-status" [attr.data-status]="inv.estadoLocal">
+                            {{ inv.estadoLocal || 'Pendiente' }}
+                        </span>
+                    </td>
+                    <td class="actions-cell">
+                        <div class="action-buttons">
+                            <button class="btn-text edit" title="Editar" (click)="toggleEdit(inv)">
+                                {{ inv.editing ? 'GUARDAR' : 'EDITAR' }}
+                            </button>
+                            <button class="btn-text view" title="Ver Detalles" (click)="inv.isEgreso ? notification.info('Detalle de Egreso: ' + inv.comercio) : openInvoiceDetail(inv.id)">
+                                VER
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                    <tr *ngIf="invoices.length === 0 && !loading">
+                        <td colspan="9" class="empty-state">
+                            <i class="fa-solid fa-circle-info"></i> No hay facturas registradas en este periodo o no se ha
+                            sincronizado.
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="modal-overlay" *ngIf="showBanksModal">
+    <div class="modal-card bank-modal office-card">
+        <header class="modal-header">
+            <h3>Resumen por Bancos (Conciliado)</h3>
+            <button class="close-btn" (click)="closeBanksModal()">&times;</button>
+        </header>
+        <main class="modal-body">
+            <div class="bank-sections">
+                <div class="bank-section bcp">
+                    <div class="bank-header">
+                        <i class="fa-solid fa-building-columns"></i>
+                        <h4>BCP</h4>
+                    </div>
+                    <div class="bank-value">S/ {{ bankTotals.bcp | number:'1.2-2' }}</div>
+                </div>
+                <div class="bank-section interbank">
+                    <div class="bank-header">
+                        <i class="fa-solid fa-building-columns"></i>
+                        <h4>INTERBANK</h4>
+                    </div>
+                    <div class="bank-value">S/ {{ bankTotals.interbank | number:'1.2-2' }}</div>
+                </div>
+                <div class="bank-section caja">
+                    <div class="bank-header">
+                        <i class="fa-solid fa-wallet"></i>
+                        <h4>CAJA VIRTUAL / IZIPAY</h4>
+                    </div>
+                    <div class="bank-value">S/ {{ bankTotals.cajaVirtual | number:'1.2-2' }}</div>
+                </div>
+            </div>
+            <p class="modal-note">* Este saldo incluye Ingresos - Gastos únicamente de transacciones Conciliadas o Pagadas.</p>
+        </main>
+    </div>
+</div>
+
+<div class="modal-overlay" *ngIf="showInvoiceModal">
+    <div class="modal-card office-card">
+        <header class="modal-header">
+            <h3>Factura #{{ invoiceDetail?.invoicenum }}</h3>
+            <button class="close-btn" (click)="closeInvoiceModal()">&times;</button>
+        </header>
+        <main class="modal-body" *ngIf="invoiceDetail">
+            <div class="info-grid">
+                <div>
+                    <label>Cliente</label>
+                    <p>{{ invoiceDetail.client?.company || invoiceDetail.client?.name }}</p>
+                </div>
+                <div>
+                    <label>Estado</label>
+                    <span class="badge" [ngClass]="invoiceDetail.status.toLowerCase()">{{ invoiceDetail.status }}</span>
+                </div>
+                <div>
+                    <label>Fecha</label>
+                    <p>{{ invoiceDetail.date }}</p>
+                </div>
+                <div>
+                    <label>Total</label>
+                    <p>S/ {{ invoiceDetail.total | number:'1.2-2' }}</p>
+                </div>
+            </div>
+
+            <div class="items-list">
+                <label>Detalle de Servicios</label>
+                <ul>
+                    <li *ngFor="let item of invoiceDetail.items">
+                        <span>{{ item.description }}</span>
+                        <strong>S/ {{ item.amount | number:'1.2-2' }}</strong>
+                    </li>
+                </ul>
+            </div>
+        </main>
+        <footer class="modal-footer">
+            <button class="btn btn-secondary" (click)="closeInvoiceModal()">Cerrar</button>
+            <button class="btn btn-primary" (click)="downloadPdf(invoiceDetail.invoiceid)">Descargar PDF</button>
+        </footer>
+    </div>
+</div>

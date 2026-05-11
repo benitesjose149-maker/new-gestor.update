@@ -1,0 +1,341 @@
+<div class="employees-container">
+    <header class="page-header">
+        <h1>Empleados Archivados (Alta/Baja)</h1>
+    </header>
+
+    <div class="filters-bar">
+        <input type="text" class="search-input" placeholder="Buscar por nombre, DNI o cargo..." [(ngModel)]="searchTerm"
+            (input)="filterEmployees()">
+    </div>
+
+    <!-- Table Section -->
+    <div class="table-container">
+        <table class="employees-table">
+            <thead>
+                <tr>
+                    <th>Empleado</th>
+                    <th>DNI</th>
+                    <th>Cargo & Departamento</th>
+                    <th>Salario</th>
+                    <th>F. Ingreso</th>
+                    <th>F. Cese</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let emp of filteredEmployees">
+                    <td class="employee-name">
+                        <div class="avatar">
+                            {{emp.nombre.charAt(0)}}{{emp.apellidos.charAt(0)}}
+                        </div>
+                        <div class="name-info">
+                            <span class="name-text">{{emp.nombre}} {{emp.apellidos}}</span>
+                            <span class="email-text">{{emp.email || 'Sin correo'}}</span>
+                        </div>
+                    </td>
+                    <td style="font-family: monospace;">{{emp.dni}}</td>
+                    <td>
+                        <div style="font-weight: 500; color: #374151;">{{emp.cargo}}</div>
+                        <div style="font-size: 0.875rem; color: #6b7280;">{{emp.departamento}}</div>
+                    </td>
+                    <td><span *ngIf="emp.sueldo">S/ {{emp.sueldo | number:'1.2-2'}}</span></td>
+                    <td>{{ (emp.fechaInicio | date:'dd/MM/yyyy') || '-' }}</td>
+                    <td style="color: #991b1b; font-weight: 500;">{{ (emp.fechaFinContrato | date:'dd/MM/yyyy') || '-'
+                        }}</td>
+                    <td><span class="badge inactivo">{{emp.estado}}</span></td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="btn-action view" (click)="viewEmployee(emp)" title="Ver Detalle">👁️
+                                Ver</button>
+                            <button class="btn-action rehire" (click)="rehireEmployee(emp)" title="Re-contratar">🔄
+                                Re-contratar</button>
+                            <button class="btn-action delete" (click)="deleteEmployee(emp)" title="Eliminar Permanentemente">🗑️
+                                Eliminar</button>
+                        </div>
+                    </td>
+                </tr>
+                <tr *ngIf="filteredEmployees.length === 0">
+                    <td colspan="8" class="empty-state">No se encontraron empleados en el archivo.</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Modal Modal (View/Re-hire) -->
+<div class="modal-overlay" *ngIf="showAddModal">
+    <div class="modal-container">
+        <div class="modal-header">
+            <h2>{{ isViewOnly ? 'Detalle de Histórico' : 'Re-contratar Empleado' }}</h2>
+            <button class="btn-close" (click)="closeAddModal()">&times;</button>
+        </div>
+
+        <div class="modal-body">
+            <!-- VISTA DE SOLO LECTURA -->
+            <div *ngIf="isViewOnly" class="view-details">
+                <div class="detail-section">
+                    <h3 class="section-title">Datos Personales</h3>
+                    <div class="detail-grid">
+                        <div class="detail-item">
+                            <label>Empleado</label>
+                            <span>{{newEmployee.nombre}} {{newEmployee.apellidos}}</span>
+                        </div>
+                        <div class="detail-item" *ngIf="newEmployee.telefono">
+                            <label>Teléfono</label>
+                            <span>{{newEmployee.telefono}}</span>
+                        </div>
+                        <div class="detail-item" *ngIf="newEmployee.direccion">
+                            <label>Dirección</label>
+                            <span>{{newEmployee.direccion}}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="detail-section">
+                    <h3 class="section-title">Información Laboral</h3>
+                    <div class="detail-grid">
+                        <div class="detail-item">
+                            <label>Cargo / Depto</label>
+                            <span>{{newEmployee.cargo}} - {{newEmployee.departamento}}</span>
+                        </div>
+                        <div class="detail-item" *ngIf="newEmployee.sueldo">
+                            <label>Sueldo</label>
+                            <span>S/ {{newEmployee.sueldo | number:'1.2-2'}}</span>
+                        </div>
+                        <div class="detail-item" *ngIf="newEmployee.fechaInicio">
+                            <label>Ingreso</label>
+                            <span>{{newEmployee.fechaInicio | date:'dd/MM/yyyy'}}</span>
+                        </div>
+                        <div class="detail-item" *ngIf="newEmployee.fechaFinContrato">
+                            <label>Cese/Archivado</label>
+                            <span style="color: #ef4444; font-weight: 600;">{{newEmployee.fechaFinContrato |
+                                date:'dd/MM/yyyy'}}</span>
+                        </div>
+                        <div class="detail-item" *ngIf="newEmployee.tipoTrabajador">
+                            <label>Régimen Laboral</label>
+                            <span>{{newEmployee.tipoTrabajador}}</span>
+                        </div>
+                        <div class="detail-item" *ngIf="newEmployee.regimenPensionario">
+                            <label>Pensión/AFP</label>
+                            <span>{{newEmployee.regimenPensionario}}</span>
+                        </div>
+                        <div class="detail-item full-width" *ngIf="newEmployee.motivo">
+                            <label>Motivo de Cese</label>
+                            <div class="motivo-badge">{{newEmployee.motivo}}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="detail-section" *ngIf="newEmployee.banco || newEmployee.numeroCuenta">
+                    <h3 class="section-title">Datos Bancarios</h3>
+                    <div class="detail-grid">
+                        <div class="detail-item" *ngIf="newEmployee.banco">
+                            <label>Banco</label><span>{{newEmployee.banco}}</span>
+                        </div>
+                        <div class="detail-item" *ngIf="newEmployee.numeroCuenta"><label>N°
+                                Cuenta</label><span>{{newEmployee.numeroCuenta}}</span></div>
+                        <div class="detail-item" *ngIf="newEmployee.cci">
+                            <label>CCI</label><span>{{newEmployee.cci}}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-actions">
+                    <button class="btn-action rehire" (click)="isViewOnly = false">Habilitar para Re-contratar</button>
+                    <button class="btn-cancel" (click)="closeAddModal()">Cerrar</button>
+                </div>
+            </div>
+
+            <!-- MODO RE-CONTRATAR -->
+            <form *ngIf="!isViewOnly" #employeeForm="ngForm" (ngSubmit)="saveEmployee()">
+                <div class="form-section">
+                    <h3 class="section-title">Información Personal</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Nombres *</label>
+                            <input type="text" [(ngModel)]="newEmployee.nombre" name="nombre" required
+                                class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label>Apellidos *</label>
+                            <input type="text" [(ngModel)]="newEmployee.apellidos" name="apellidos" required
+                                class="form-control">
+                        </div>
+                    </div>
+                    <div class="form-row three-col">
+                        <div class="form-group">
+                            <label>DNI *</label>
+                            <input type="text" [(ngModel)]="newEmployee.dni" name="dni" required maxlength="8"
+                                class="form-control" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label>Fecha Nacimiento</label>
+                            <input type="date" [(ngModel)]="newEmployee.fechaNacimiento" name="fechaNacimiento"
+                                class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label>Sexo</label>
+                            <select [(ngModel)]="newEmployee.sexo" name="sexo" class="form-control">
+                                <option value="">Seleccione</option>
+                                <option value="Masculino">Masculino</option>
+                                <option value="Femenino">Femenino</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Nacionalidad</label>
+                            <input type="text" [(ngModel)]="newEmployee.nacionalidad" name="nacionalidad"
+                                class="form-control">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Dirección</label>
+                            <input type="text" [(ngModel)]="newEmployee.direccion" name="direccion"
+                                class="form-control">
+                        </div>
+                    </div>
+                    <div class="form-row three-col">
+                        <div class="form-group">
+                            <label>Teléfono</label>
+                            <input type="text" [(ngModel)]="newEmployee.telefono" name="telefono" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label>Email Personal</label>
+                            <input type="email" [(ngModel)]="newEmployee.email" name="email" class="form-control">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Contacto Emergencia</label>
+                            <input type="text" [(ngModel)]="newEmployee.contactoEmergencia" name="contactoEmergencia"
+                                class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label>Teléfono Emergencia</label>
+                            <input type="text" [(ngModel)]="newEmployee.numeroEmergencia" name="numeroEmergencia"
+                                class="form-control">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h3 class="section-title">Información Laboral</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Cargo *</label>
+                            <select [(ngModel)]="newEmployee.cargo" name="cargo" required class="form-control"
+                                (change)="onCargoChange()">
+                                <option value="">Seleccione un Cargo</option>
+                                <option *ngFor="let cargo of cargos" [value]="cargo">{{cargo}}</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Departamento *</label>
+                            <select [(ngModel)]="newEmployee.departamento" name="departamento" required
+                                class="form-control" [disabled]="!newEmployee.cargo">
+                                <option value="">Seleccione un Departamento</option>
+                                <option *ngFor="let dept of availableDepartamentos" [value]="dept">{{dept}}</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row three-col">
+                        <div class="form-group">
+                            <label>Tipo Trabajador</label>
+                            <select [(ngModel)]="newEmployee.tipoTrabajador" name="tipoTrabajador" class="form-control">
+                                <option value="PLANILLA">Planilla</option>
+                                <option value="HONORARIOS">Recibo por Honorarios</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Régimen Pensionario</label>
+                            <select [(ngModel)]="newEmployee.regimenPensionario" name="regimenPensionario"
+                                class="form-control" [disabled]="newEmployee.tipoTrabajador === 'RXH'">
+                                <option value="SNP/ONP">SNP (ONP)</option>
+                                <option value="INTEGRA">AFP Integra</option>
+                                <option value="PRIMA">AFP Prima</option>
+                                <option value="HABITAT">AFP Habitat</option>
+                                <option value="PROFUTURO">AFP Profuturo</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Sueldo Básico</label>
+                            <input type="number" [(ngModel)]="newEmployee.sueldo" name="sueldo" class="form-control">
+
+                            <div class="form-group-checkbox small-text">
+                                <input type="checkbox" [(ngModel)]="newEmployee.calculoAfpMinimo"
+                                    name="calculoAfpMinimo" id="calcAfpVal"
+                                    [disabled]="newEmployee.tipoTrabajador === 'RXH'">
+                                <label for="calcAfpVal">Cálculo AFP sobre Mínimo (1130)</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h3 class="section-title">Detalle Contrato</h3>
+                    <div class="form-row three-col">
+                        <div class="form-group">
+                            <label>Fecha Inicio</label>
+                            <input type="date" [(ngModel)]="newEmployee.fechaInicio" name="fechaInicio"
+                                class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label>Fin Contrato</label>
+                            <input type="date" [(ngModel)]="newEmployee.fechaFinContrato" name="fechaFinContrato"
+                                class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label>Horario</label>
+                            <input type="text" [(ngModel)]="newEmployee.horarioTrabajo" name="horarioTrabajo"
+                                class="form-control">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h3 class="section-title">Datos Bancarios</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Banco</label>
+                            <select [(ngModel)]="newEmployee.banco" name="banco" class="form-control">
+                                <option value="">Seleccione</option>
+                                <option value="BCP">BCP</option>
+                                <option value="BBVA">BBVA</option>
+                                <option value="INTERBANK">Interbank</option>
+                                <option value="SCOTIABANK">Scotiabank</option>
+                                <option value="NACION">Banco de la Nación</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Tipo Cuenta</label>
+                            <select [(ngModel)]="newEmployee.tipoCuenta" name="tipoCuenta" class="form-control">
+                                <option value="">Seleccione</option>
+                                <option value="AHORROS">Ahorros</option>
+                                <option value="CORRIENTE">Corriente</option>
+                                <option value="CTS">CTS</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Número Cuenta</label>
+                            <input type="text" [(ngModel)]="newEmployee.numeroCuenta" name="numeroCuenta"
+                                class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label>CCI</label>
+                            <input type="text" [(ngModel)]="newEmployee.cci" name="cci" class="form-control">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn-cancel" (click)="closeAddModal()">Cancelar</button>
+                    <button type="submit" class="btn-save" [disabled]="!employeeForm.form.valid">Confirmar
+                        Re-contratación</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,519 @@
+:host {
+    display: block;
+    padding: 2rem;
+    background-color: #f9fafb;
+    min-height: 100vh;
+}
+
+@media (max-width: 768px) {
+    :host {
+        padding: 1rem;
+    }
+
+    .page-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+}
+
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.page-header h1 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #111827;
+    margin: 0;
+}
+
+.month-badge {
+    background-color: #e0e7ff;
+    color: #4338ca;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    font-weight: 600;
+    text-transform: capitalize;
+}
+
+.table-container {
+    background-color: white;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+    overflow-x: auto;
+    padding-bottom: 1rem;
+}
+
+.planilla-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+    min-width: 1500px;
+    /* Force scroll for wide table */
+}
+
+.planilla-table th {
+    background-color: #f9fafb;
+    color: #374151;
+    font-weight: 600;
+    text-align: center;
+    /* Centered headers */
+    padding: 0.75rem 0.5rem;
+    border-bottom: 2px solid #e5e7eb;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.05em;
+    vertical-align: middle;
+}
+
+.planilla-table td {
+    padding: 0.5rem;
+    border-bottom: 1px solid #f3f4f6;
+    color: #374151;
+    text-align: center;
+    vertical-align: middle;
+}
+
+.planilla-table tr:hover {
+    background-color: #f8fafc;
+}
+
+.input-cell {
+    width: 70px;
+    padding: 0.25rem 0.5rem;
+    border: 1px solid #d1d5db;
+    border-radius: 4px;
+    text-align: center;
+    font-size: 0.85rem;
+    transition: border-color 0.15s;
+}
+
+.input-cell:focus {
+    border-color: #2563eb;
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
+}
+
+.text-left {
+    text-align: left !important;
+}
+
+.text-right {
+    text-align: right !important;
+}
+
+.text-center {
+    text-align: center !important;
+}
+
+.font-medium {
+    font-weight: 600;
+}
+
+.text-gray {
+    color: #6b7280;
+}
+
+.employee-cell {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.badge {
+    padding: 0.2px 0.5rem;
+    border-radius: 9999px;
+    font-size: 0.7rem;
+    font-weight: 500;
+}
+
+.neto-cell {
+    font-weight: 700;
+    color: #059669;
+    font-size: 0.95rem;
+}
+
+.btn-export {
+    background-color: #10b981;
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: background-color 0.2s;
+}
+
+.btn-export:hover {
+    background-color: #059669;
+}
+
+/* Info Link Styles */
+.info-link {
+    font-size: 0.65rem;
+    color: #2563eb;
+    cursor: pointer;
+    text-decoration: underline;
+    margin-top: 2px;
+}
+
+.info-link:hover {
+    color: #1d4ed8;
+}
+
+/* Modal Styles */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    background-color: white;
+    padding: 0;
+    /* Header/Body split */
+    border-radius: 12px;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    width: 100%;
+    max-width: 500px;
+    position: relative;
+    animation: slideDown 0.3s ease-out;
+}
+
+.modal-header {
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid #e5e7eb;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-header h3 {
+    margin: 0;
+    font-size: 1.1rem;
+    color: #111827;
+}
+
+.modal-body {
+    padding: 1.5rem;
+}
+
+.close-btn {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: #6b7280;
+    cursor: pointer;
+}
+
+@keyframes slideDown {
+    from {
+        transform: translateY(-20px);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.separator {
+    border: 0;
+    border-top: 1px solid #e5e7eb;
+    margin: 1rem 0;
+}
+
+.calc-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+    color: #374151;
+}
+
+.calc-row.highlight {
+    background-color: #f3f4f6;
+    padding: 0.5rem;
+    border-radius: 6px;
+    font-weight: 500;
+}
+
+.calc-row.total {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #b91c1c;
+}
+
+.modal-footer {
+    padding: 1rem 1.5rem;
+    border-top: 1px solid #e5e7eb;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.btn-primary {
+    background-color: #2563eb;
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+.btn-primary:hover {
+    background-color: #1d4ed8;
+}
+
+/* Hide number input spinners */
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    appearance: none;
+    margin: 0;
+}
+
+input[type=number] {
+    -moz-appearance: textfield;
+    appearance: textfield;
+}
+
+/* Status Select in Table */
+.status-select-table {
+    padding: 0.25rem 0.5rem;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.status-select-table.pendiente {
+    background-color: #fef3c7;
+    color: #92400e;
+}
+
+.status-select-table.pagado {
+    background-color: #d1fae5;
+    color: #065f46;
+}
+
+/* Detail Button */
+.btn-action-detail {
+    background-color: #f3f4f6;
+    color: #374151;
+    border: 1px solid #d1d5db;
+    padding: 0.4rem 0.75rem;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    transition: all 0.2s;
+}
+
+.btn-action-detail:hover {
+    background-color: #e5e7eb;
+    border-color: #9ca3af;
+}
+
+.eye-icon::before {
+    content: "👁";
+}
+
+/* Premium Detail Modal */
+.detail-modal {
+    max-width: 700px;
+    border: none !important;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important;
+}
+
+.employee-info-banner {
+    background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+    padding: 1.25rem;
+    border-radius: 12px;
+    margin-bottom: 1.5rem;
+    display: flex;
+    justify-content: space-around;
+    color: white;
+}
+
+.info-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.info-item .label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    opacity: 0.7;
+    margin-bottom: 0.25rem;
+}
+
+.info-item .value {
+    font-weight: 600;
+}
+
+.detail-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+@media (max-width: 640px) {
+    .detail-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .employee-info-banner, .responsive-flex-banner {
+        flex-direction: column !important;
+        gap: 1rem !important;
+        align-items: flex-start !important;
+    }
+    
+    .responsive-flex-banner > div {
+        width: 100%;
+        text-align: left !important;
+    }
+    
+    .responsive-grid-row {
+        grid-template-columns: 1fr !important;
+        gap: 0.5rem !important;
+    }
+
+    .responsive-grid-row button {
+        width: 100%;
+        margin-top: 0.5rem;
+    }
+
+    .modal-content {
+        width: 95% !important;
+        margin: 10px auto !important;
+        max-height: 90vh !important;
+        overflow-y: auto !important;
+    }
+
+    .modal-body table {
+        display: block;
+        width: 100%;
+        overflow-x: auto;
+    }
+}
+
+.column-title {
+    font-size: 0.9rem;
+    font-weight: 700;
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #f3f4f6;
+}
+
+.column-title.ingresos {
+    color: #059669;
+}
+
+.column-title.descuentos {
+    color: #dc2626;
+}
+
+.detail-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.4rem 0;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #f9fafb;
+}
+
+.detail-row.total-row {
+    margin-top: 0.5rem;
+    padding-top: 0.5rem;
+    font-weight: 700;
+    border-top: 2px solid #f3f4f6;
+    border-bottom: none;
+}
+
+.text-red {
+    color: #dc2626;
+}
+
+.neto-banner {
+    background-color: #f0fdf4;
+    border: 2px solid #dcfce7;
+    border-radius: 12px;
+    padding: 1.25rem;
+    text-align: center;
+    margin-bottom: 1.5rem;
+}
+
+.neto-label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #166534;
+    letter-spacing: 0.1em;
+    margin-bottom: 0.25rem;
+}
+
+.neto-value {
+    font-size: 2rem;
+    font-weight: 800;
+    color: #15803d;
+}
+
+.status-footer {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid #f3f4f6;
+}
+
+.status-select {
+    padding: 0.4rem 0.75rem;
+    border-radius: 8px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.status-select.pendiente {
+    background-color: #fef3c7;
+    color: #92400e;
+    border: 1px solid #fcd34d;
+}
+
+.status-select.pagado {
+    background-color: #d1fae5;
+    color: #065f46;
+    border: 1px solid #6ee7b7;
+}
+.switch-mini { display: flex; flex-direction: column; align-items: center; gap: 4px; } .switch-mini input[type='checkbox'] { width: 34px; height: 18px; appearance: none; background-color: rgba(0,0,0,0.3); border-radius: 10px; position: relative; cursor: pointer; border: 1px solid rgba(255,255,255,0.2); } .switch-mini input[type='checkbox']:checked { background-color: #10b981; } .switch-mini input[type='checkbox']::before { content: ''; position: absolute; width: 14px; height: 14px; background: white; border-radius: 50%; top: 1px; left: 1px; transition: 0.2s; } .switch-mini input[type='checkbox']:checked::before { left: 17px; }
+.suggested-badge {
+    background-color: #eff6ff;
+    color: #1d4ed8;
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 1px 4px;
+    border-radius: 4px;
+    border: 1px solid #bfdbfe;
+    white-space: nowrap;
+}

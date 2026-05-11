@@ -1,0 +1,508 @@
+
+.whmcs-history-container {
+    padding: 1.5rem;
+    max-width: 1400px;
+    margin: 0 auto;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    background: #f8fafc;
+    min-height: 100vh;
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem 2rem;
+    margin-bottom: 1.5rem;
+    border-radius: 6px;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.header-main h1 {
+    margin: 0;
+    font-size: 1.5rem;
+    color: #0f172a;
+    font-weight: 700;
+}
+
+.header-main p {
+    margin: 0.25rem 0 0;
+    color: #475569;
+    font-size: 0.9rem;
+}
+
+.header-filters {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+}
+
+.form-select {
+    padding: 0.5rem 1rem;
+    border: 1px solid #cbd5e1;
+    border-radius: 4px;
+    background: white;
+    color: #1e293b;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.form-select:focus {
+    outline: none;
+    border-color: #334155;
+    box-shadow: 0 0 0 2px rgba(51, 65, 85, 0.1);
+}
+
+.summary-cards {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.summary-cards .card {
+    padding: 1.25rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    border-radius: 6px;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-left: 4px solid #cbd5e1;
+}
+
+.summary-cards .card:first-child { border-left-color: #2563eb; }
+.summary-cards .card:nth-child(2) { border-left-color: #dc2626; }
+.summary-cards .card:last-child { border-left-color: #10b981; }
+
+.summary-cards .label {
+    font-size: 0.8rem;
+    color: #64748b;
+    text-transform: uppercase;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+
+.summary-cards .value {
+    font-size: 1.6rem;
+    font-weight: 800;
+    margin-top: 0.5rem;
+    font-family: 'JetBrains Mono', monospace;
+    color: #0f172a;
+}
+
+.table-container {
+    padding: 0;
+    overflow: hidden;
+    border-radius: 6px;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.table-scroll {
+    overflow-x: auto;
+}
+
+.history-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.history-table th {
+    text-align: left;
+    padding: 0.75rem 1rem;
+    background: #f1f5f9;
+    color: #475569;
+    font-weight: 700;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 2px solid #e2e8f0;
+}
+
+.history-table td {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid #f1f5f9;
+    color: #334155;
+    vertical-align: middle;
+    font-size: 0.9rem;
+}
+
+.history-table tbody tr:nth-child(even) {
+    background: #f8fafc;
+}
+
+.egreso-row {
+    background-color: #fff1f2 !important; /* Rojo muy suave */
+}
+
+.egreso-row:hover {
+    background-color: #ffe4e6 !important;
+}
+
+.badge-status {
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    background: #f1f5f9;
+    color: #64748b;
+}
+
+.badge-egreso {
+    background-color: #be123c;
+    color: white;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    font-weight: bold;
+}
+
+.badge-status[data-status="Conciliado"] {
+    background: #dcfce7;
+    color: #15803d;
+}
+
+.badge-status[data-status="Pagado"] {
+    background: #dcfce7;
+    color: #15803d;
+}
+
+.badge-status[data-status="Pendiente"] {
+    background: #fef2f2;
+    color: #dc2626;
+}
+
+.badge-status[data-status="No Conciliado"] {
+    background: #fef3c7;
+    color: #b45309;
+}
+
+.bank-modal {
+    max-width: 600px;
+}
+
+.bank-sections {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.bank-section {
+    flex: 1;
+    padding: 15px;
+    border-radius: 8px;
+    text-align: center;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+}
+
+.bank-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+    color: #64748b;
+}
+
+.bank-header i {
+    font-size: 1.5rem;
+}
+
+.bank-header h4 {
+    margin: 0;
+    font-size: 0.8rem;
+    font-weight: 700;
+}
+
+.bank-value {
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: #1e293b;
+}
+
+.bank-section.bcp { border-top: 4px solid #1e3a8a; }
+.bank-section.interbank { border-top: 4px solid #10b981; }
+.bank-section.caja { border-top: 4px solid #be123c; }
+
+.modal-note {
+    font-size: 0.75rem;
+    color: #94a3b8;
+    text-align: center;
+    font-style: italic;
+}
+
+.history-table tbody tr:hover {
+    background: #f1f5f9;
+}
+
+.id-cell {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.invoice-num {
+    font-weight: 700;
+    color: #1e40af;
+}
+
+.client-cell {
+    max-width: 300px;
+}
+
+.client-cell strong {
+    color: #0f172a;
+    font-size: 0.9rem;
+}
+
+.client-cell small {
+    color: #64748b;
+    font-size: 0.75rem;
+}
+
+.amount, .fee, .net {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.bank-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    background: #e2e8f0;
+    padding: 0.2rem 0.6rem;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #334155;
+}
+
+.bank-pill .dot {
+    width: 6px;
+    height: 6px;
+    background: #059669;
+    border-radius: 50%;
+}
+
+.badge {
+    padding: 0.15rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    display: inline-block;
+    width: fit-content;
+}
+
+.badge.paid { background: #166534; color: #ffffff; }
+.badge.unpaid { background: #b91c1c; color: #ffffff; }
+.badge.cancelled { background: #475569; color: #ffffff; }
+
+.btn {
+    padding: 0.5rem 1.25rem;
+    border-radius: 4px;
+    font-weight: 700;
+    cursor: pointer;
+    border: none;
+    font-size: 0.85rem;
+    transition: background-color 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.btn-primary { background: #334155; color: white; }
+.btn-primary:hover { background: #0f172a; }
+
+.btn-success { background: #059669; color: white; }
+.btn-success:hover { background: #047857; }
+
+.btn-secondary { background: #94a3b8; color: white; }
+.btn-secondary:hover { background: #64748b; }
+
+.action-buttons {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+}
+
+.btn-text {
+    background: #f1f5f9;
+    border: 1px solid #e2e8f0;
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-size: 0.65rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: #475569;
+}
+
+.btn-text:hover {
+    background: #e2e8f0;
+}
+
+.btn-text.edit {
+    color: #2563eb;
+    border-color: #bfdbfe;
+}
+
+.btn-text.view {
+    color: #64748b;
+}
+
+.btn-icon {
+    background: #f1f5f9;
+    border: 1px solid #cbd5e1;
+    padding: 0.4rem;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: all 0.1s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #334155;
+}
+
+.btn-icon:hover {
+    background: #e2e8f0;
+    border-color: #94a3b8;
+}
+
+.input-with-currency {
+    display: flex;
+    align-items: center;
+    background: white;
+    border: 1px solid #cbd5e1;
+    border-radius: 4px;
+    padding: 2px 6px;
+    min-width: 120px;
+}
+
+.currency-prefix {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #64748b;
+    margin-right: 4px;
+}
+
+.amount-input {
+    border: none !important;
+    background: none !important;
+    padding: 2px 0 !important;
+    width: 100%;
+    font-weight: 700;
+    color: #0f172a;
+    font-size: 0.85rem;
+    text-align: right;
+    font-family: 'JetBrains Mono', monospace;
+}
+
+/* Modal Styling (More Formal) */
+.modal-overlay {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100vw; height: 100vh;
+    background: rgba(15, 23, 42, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.modal-card {
+    width: 95%;
+    max-width: 700px;
+    padding: 0;
+    border-radius: 4px;
+    overflow: hidden;
+    background: white;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+.modal-header {
+    background: #0f172a;
+    padding: 1rem 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: white;
+}
+
+.modal-header h3 { margin: 0; font-size: 1.1rem; text-transform: uppercase; letter-spacing: 1px; }
+
+.modal-body { padding: 1.5rem; }
+
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    background: #f8fafc;
+    padding: 1rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 4px;
+}
+
+.info-grid label { display: block; font-size: 0.7rem; color: #64748b; font-weight: 700; margin-bottom: 0.25rem; text-transform: uppercase; }
+.info-grid p { margin: 0; font-size: 0.9rem; font-weight: 700; color: #0f172a; }
+
+.items-list label { 
+    display: block; 
+    font-size: 0.75rem; 
+    color: #0f172a; 
+    font-weight: 800; 
+    margin-bottom: 0.75rem; 
+    border-bottom: 2px solid #0f172a; 
+    padding-bottom: 0.25rem; 
+    text-transform: uppercase; 
+}
+.items-list ul { list-style: none; padding: 0; margin: 0; }
+.items-list li { 
+    display: flex; 
+    justify-content: space-between; 
+    padding: 0.5rem 0.25rem; 
+    border-bottom: 1px solid #e2e8f0; 
+    font-size: 0.85rem; 
+}
+
+.modal-footer {
+    padding: 1rem 1.5rem;
+    background: #f1f5f9;
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    border-top: 1px solid #e2e8f0;
+}
+
+.close-btn { background: none; border: none; color: white; font-size: 1.25rem; cursor: pointer; }
+
+/* Status Classes */
+.text-danger { color: #dc2626; }
+.text-success { color: #15803d; }
+.text-egreso { color: #be123c; }
+
+.summary-cards .card.card-egresos {
+    border-left: 4px solid #be123c;
+}
+
+.summary-cards .card.card-neto {
+    border-left: 4px solid #10b981;
+}
+
+.text-primary { color: #2563eb !important; }
+
+.empty-state {
+    padding: 3rem;
+    text-align: center;
+    color: #64748b;
+    font-size: 0.9rem;
+}

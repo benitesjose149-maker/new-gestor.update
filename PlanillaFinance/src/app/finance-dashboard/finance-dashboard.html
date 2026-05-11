@@ -1,0 +1,581 @@
+<div class="finance-container">
+    <header class="finance-header centered">
+        <div class="header-main">
+            <h1>Administración de Finanzas</h1>
+            <div class="header-sub">
+                <span class="header-period">{{ getCurrentMonth() }}</span>
+            </div>
+        </div>
+        <div class="header-actions">
+            <div class="period-selectors">
+                <select class="form-select" [(ngModel)]="selectedMonth" (change)="loadAll()">
+                    <option *ngFor="let m of months" [value]="m.id">{{ m.name }}</option>
+                </select>
+                <select class="form-select" [(ngModel)]="selectedYear" (change)="loadAll()">
+                    <option *ngFor="let y of years" [value]="y">{{ y }}</option>
+                </select>
+            </div>
+            <button class="btn-primary" (click)="abrirNuevoModal()">
+                + Nuevo Egreso
+            </button>
+        </div>
+    </header>
+    <div class="filters-section glass-card">
+        <div class="filter-item">
+            <label><i class="fa-solid fa-magnifying-glass"></i> Cliente / Concepto</label>
+            <input type="text" [(ngModel)]="filters.searchText" placeholder="Buscar cliente o categoría...">
+        </div>
+        <div class="filter-item">
+            <label><i class="fa-solid fa-building-columns"></i> Banco</label>
+            <select [(ngModel)]="filters.banco">
+                <option value="">Cualquier Banco</option>
+                <option *ngFor="let b of bancos" [value]="b.name">{{ b.name }}</option>
+            </select>
+        </div>
+        <div class="filter-item">
+            <label><i class="fa-solid fa-file-invoice"></i> Nº Factura / Ref</label>
+            <input type="text" [(ngModel)]="filters.numFactura" placeholder="Referencia o factura...">
+        </div>
+        <div class="filter-item">
+            <label><i class="fa-solid fa-calendar-days"></i> Fecha Exacta</label>
+            <input type="date" [(ngModel)]="filters.fecha">
+        </div>
+
+        <div class="filter-item clear-action"
+            *ngIf="filters.searchText || filters.banco || filters.numFactura || filters.fecha">
+            <button class="btn-clear"
+                (click)="filters = {searchText:'', banco:'', tipoMov:'', numFactura:'', fecha:''}">
+                <i class="fa-solid fa-xmark"></i> Limpiar
+            </button>
+        </div>
+    </div>
+
+    <div class="loading-state" *ngIf="loading">
+        <span>Cargando datos financieros...</span>
+    </div>
+
+    <div class="finance-main-content" [ngClass]="{'table-fullscreen': tableExpanded}">
+        <div class="movements-section">
+            <div *ngIf="!loading" class="card glass-card">
+                <div class="card-header">
+                    <div class="header-info">
+                        <h2>Registros de Movimientos</h2>
+                        <span class="record-description">Listado detallado con filtros aplicados ({{
+                            filteredItems.length }} registros encontrados)</span>
+                    </div>
+                    <button class="btn-expand-header" (click)="tableExpanded = !tableExpanded"
+                        [title]="tableExpanded ? 'Contraer tabla' : 'Expandir tabla'">
+                        <span class="expand-icon">{{ tableExpanded ? '⤡' : '⤢' }}</span>
+                    </button>
+                </div>
+                <div class="table-scroll-container">
+                    <div class="table-wrapper">
+                        <table class="finance-table">
+                            <thead>
+                                <tr>
+                                    <th style="width: 40px; text-align: center;">#</th>
+                                    <th style="width: 50px;">TIPO</th>
+                                    <th>Nº FACTURA</th>
+                                    <th>FECHA</th>
+                                    <th>CLIENTE / CONCEPTO</th>
+                                    <th>REF / OBS</th>
+                                    <th>TIPO MOV.</th>
+                                    <th>MONTO BRUTO</th>
+                                    <th>COMISIÓN</th>
+                                    <th>DEPÓSITO/SALIDA</th>
+                                    <th>BANCO</th>
+                                    <th>CTA. DÉBITO</th>
+                                    <th>CTA. CRÉDITO</th>
+                                    <th>C. CONTABLE</th>
+                                    <th>ESTADO</th>
+                                    <th>ACCION</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr *ngFor="let inv of paginatedItems; let i = index" class="table-row"
+                                    [id]="'invoice-row-' + inv.id" [ngClass]="{'egreso-row': inv.isEgreso}">
+                                    <td
+                                        style="text-align: center; font-weight: bold; color: #64748b; background: #f8fafc; font-size: 0.85rem;">
+                                        {{ i + 1 + (currentPage - 1) * effectivePageSize }}
+                                    </td>
+                                    <td class="id-cell">
+                                        <span *ngIf="!inv.isEgreso" class="badge badge-ingreso">INGRESO</span>
+                                        <span *ngIf="inv.isEgreso && inv.origen !== 'GMAIL'"
+                                            class="badge bg-danger">EGRESO</span>
+                                        <span *ngIf="inv.isEgreso && inv.origen === 'GMAIL'" class="badge badge-gmail"
+                                            title="Sincronizado desde Gmail">
+                                            <i class="fa-envelope fa-solid"></i> GMAIL
+                                        </span>
+                                    </td>
+                                    <td class="fw-bold text-primary">
+                                        <a *ngIf="!inv.isEgreso" class="invoice-link"
+                                            style="color: #2563eb; cursor: pointer; text-decoration: none; font-weight: 600;"
+                                            (click)="openInvoiceDetail(inv.id)">#{{ inv.numFactura }}</a>
+                                        <span *ngIf="inv.isEgreso" style="color: #94a3b8;">-</span>
+                                    </td>
+                                    <td class="date-cell">{{ inv.isEgreso ? (inv.fecha | date:'dd/MM/yyyy') : (inv.fecha
+                                        |
+                                        date:'dd/MM/yyyy') }}</td>
+                                    <td class="desc-cell">
+                                        <span *ngIf="!inv.isEgreso">
+                                            <strong *ngIf="getClientParts(inv.clienteConcepto).empresa"
+                                                class="text-empresa">{{ getClientParts(inv.clienteConcepto).empresa
+                                                }}</strong>
+                                            <br *ngIf="getClientParts(inv.clienteConcepto).empresa">
+                                            <span class="text-cliente">{{ getClientParts(inv.clienteConcepto).nombre
+                                                }}</span>
+                                            <br>
+                                            <small class="text-servicio">{{ getClientParts(inv.clienteConcepto).servicio
+                                                }}</small>
+                                        </span>
+                                        <span *ngIf="inv.isEgreso"><strong>{{ inv.comercio }}</strong><br><small>{{
+                                                inv.categoria
+                                                }}</small></span>
+                                    </td>
+                                    <td class="ref-cell">{{ inv.isEgreso ? (inv.observacion || inv.referencia) :
+                                        (inv.referencia || '-') }}
+                                    </td>
+                                    <td>
+                                        <select *ngIf="!inv.isEgreso" class="cell-select"
+                                            [(ngModel)]="inv.tipoMovimiento" (change)="onFieldChange(inv)">
+                                            <option value="">--</option>
+                                            <option *ngFor="let mt of movementTypes" [value]="mt.name">{{ mt.name }}
+                                            </option>
+                                        </select>
+                                        <span *ngIf="inv.isEgreso" class="text-muted">{{ inv.tipoEgreso }}</span>
+                                    </td>
+                                    <td class="amount-cell"
+                                        [ngClass]="inv.isEgreso ? 'amount-negative text-danger' : 'amount-positive'">
+                                        <div class="input-with-currency" *ngIf="!inv.isEgreso && inv.editing">
+                                            <span class="currency-prefix">S/</span>
+                                            <input type="number" class="cell-input amount-input"
+                                                [(ngModel)]="inv.montoBruto" (ngModelChange)="onMontoBrutoChange(inv)"
+                                                step="0.01" min="0">
+                                        </div>
+                                        <span class="nowrap-amount" *ngIf="inv.isEgreso || !inv.editing">
+                                            {{ inv.isEgreso ? '-' : '' }}S/.{{ (inv.montoBruto || 0) | number:'1.2-2' }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div *ngIf="!inv.isEgreso && inv.editing">
+                                            <input type="number" class="cell-input" [(ngModel)]="inv.comision"
+                                                (ngModelChange)="onComisionChange(inv)" step="0.01" min="0">
+                                        </div>
+                                        <span *ngIf="inv.isEgreso || !inv.editing">{{ !inv.isEgreso ? ('S/ ' +
+                                            (inv.comision | number:'1.2-2')) : '-' }}</span>
+                                    </td>
+                                    <td class="amount-cell"
+                                        [ngClass]="inv.isEgreso ? 'amount-negative text-danger fw-bold' : ''">
+                                        <span class="nowrap-amount">{{ inv.isEgreso ? '-' : '' }}S/{{
+                                            (inv.depositoSalida || 0) | number:'1.2-2' }}</span>
+                                    </td>
+                                    <td>
+                                        <select class="cell-select" [(ngModel)]="inv.banco"
+                                            (change)="onBancoChange(inv)">
+                                            <option value="">--</option>
+                                            <option *ngFor="let b of (inv.isEgreso ? bancosLista : bancos)"
+                                                [value]="inv.isEgreso ? b : b.name">{{ inv.isEgreso ? b : b.name }}
+                                            </option>
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <select *ngIf="!inv.isEgreso" class="cell-select" [(ngModel)]="inv.cuentaDebito"
+                                            (change)="onCuentaDebitoChange(inv)">
+                                            <option value="">--</option>
+                                            <option *ngFor="let da of debitAccounts" [value]="da.name">{{ da.name }}
+                                            </option>
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <select *ngIf="!inv.isEgreso" class="cell-select"
+                                            [(ngModel)]="inv.cuentaCredito" (change)="onFieldChange(inv)">
+                                            <option value="">--</option>
+                                            <option *ngFor="let ca of creditAccounts" [value]="ca.name">{{ ca.name }}
+                                            </option>
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <select class="cell-select" [(ngModel)]="inv.codigoContable"
+                                            (change)="onCodigoContableChange(inv)">
+                                            <option value="">--</option>
+                                            <option *ngFor="let cc of codigosContables" [value]="cc.codigo">{{ cc.name
+                                                }}
+                                            </option>
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <select class="cell-select" [(ngModel)]="inv.estadoLocal"
+                                            (change)="onFieldChange(inv)"
+                                            [ngStyle]="inv.estadoLocal === 'Pendiente' ? {'color':'#dc2626','background-color':'#fef2f2','border-color':'#fca5a5','font-weight':'600'} : {}">
+                                            <option *ngFor="let ts of transactionStatuses" [value]="ts.name">{{ ts.name
+                                                }}</option>
+                                        </select>
+                                    </td>
+                                    <td class="text-center">
+                                        <button class="action-link edit-btn" (click)="toggleEdit(inv)"
+                                            *ngIf="!inv.isEgreso">
+                                            {{ inv.editing ? 'GUARDAR' : 'EDITAR' }}
+                                        </button>
+                                        <button *ngIf="inv.isEgreso" class="action-link delete-btn"
+                                            (click)="eliminarEgreso(inv.id)" title="Eliminar Egreso">
+                                            ELIMINAR
+                                        </button>
+                                    </td>
+
+                                </tr>
+                                <tr *ngIf="items.length === 0">
+                                    <td colspan="14" class="empty-state">
+                                        No se encontraron movimientos para este mes.
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="pagination-section">
+                    <div class="pagination-controls"
+                        style="display: flex; align-items: center; justify-content: center; gap: 1rem; padding: 0.75rem 1rem; flex-wrap: wrap;">
+                        <div
+                            style="display: flex; align-items: center; gap: 0.4rem; font-size: 0.82rem; color: #64748b;">
+                            <span>Items por página:</span>
+                            <select [(ngModel)]="pageSize" (change)="changePageSize($event)"
+                                style="padding: 0.25rem 0.4rem; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 0.82rem; background: white; color: #334155; cursor: pointer;">
+                                <option [value]="10">10</option>
+                                <option [value]="25">25</option>
+                                <option [value]="50">50</option>
+                                <option [value]="100">100</option>
+                                <option [value]="200">200</option>
+                                <option value="All">All</option>
+                            </select>
+                        </div>
+                        <button *ngIf="totalPages > 1" class="btn-page" (click)="prevPage()"
+                            [disabled]="currentPage === 1">
+                            <i class="fa-solid fa-chevron-left"></i> Anterior
+                        </button>
+                        <span *ngIf="totalPages > 1" class="page-info">
+                            Página <strong>{{ currentPage }}</strong> de <strong>{{ totalPages }}</strong>
+                        </span>
+                        <button *ngIf="totalPages > 1" class="btn-page" (click)="nextPage()"
+                            [disabled]="currentPage === totalPages">
+                            Siguiente <i class="fa-solid fa-chevron-right"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="sidebar-section">
+            <div class="card glass-card side-widget">
+                <div class="card-header">
+                    <h2>Balances por Banco</h2>
+                    <button class="btn-edit-balances" (click)="toggleEditBalances()"
+                        [title]="editingBalances ? 'Cancelar edición' : 'Editar balances'">
+                        {{ editingBalances ? '✕' : '✏️' }}
+                    </button>
+                </div>
+                <div class="bank-list">
+                    <ng-container *ngIf="!editingBalances">
+                        <div class="bank-item interbank">
+                            <div class="bank-icon">IB</div>
+                            <div class="bank-details">
+                                <span class="bank-name">INTERBANK</span>
+                                <span class="bank-balance">S/ {{ totalInterbank | number:'1.2-2' }}</span>
+                            </div>
+                        </div>
+                        <div class="bank-item bcp">
+                            <div class="bank-icon">BC</div>
+                            <div class="bank-details">
+                                <span class="bank-name">BCP</span>
+                                <span class="bank-balance">S/ {{ totalBcp | number:'1.2-2' }}</span>
+                            </div>
+                        </div>
+                        <div class="bank-item caja">
+                            <div class="bank-icon">CV</div>
+                            <div class="bank-details">
+                                <span class="bank-name">CAJA VIRTUAL</span>
+                                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                    <span class="bank-balance">S/ {{ totalCajaVirtual | number:'1.2-2' }}</span>
+                                    <span class="pending-badge">
+                                        S/ {{ totalCajaVirtualPendiente | number:'1.2-2' }}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bank-item caja">
+                            <div class="bank-icon">B1</div>
+                            <div class="bank-details">
+                                <span class="bank-name">Balance 1</span>
+                                <span class="bank-balance">S/ {{ balance1 | number:'1.2-2' }}</span>
+                            </div>
+                        </div>
+                        <div class="bank-item caja">
+                            <div class="bank-icon">B2</div>
+                            <div class="bank-details">
+                                <span class="bank-name">Balance 2</span>
+                                <span class="bank-balance">S/ {{ balance2 | number:'1.2-2' }}</span>
+                            </div>
+                        </div>
+                    </ng-container>
+
+                    <ng-container *ngIf="editingBalances">
+                        <div class="bank-item editing" [ngClass]="b.css" *ngFor="let b of bankBalances; let i = index">
+                            <div class="bank-icon-edit">
+                                <input type="text" class="icon-input" [(ngModel)]="b.icon" maxlength="3">
+                            </div>
+                            <div class="bank-details-edit">
+                                <input type="text" class="name-input" [(ngModel)]="b.name" placeholder="Nombre">
+                                <div class="balance-input-wrapper">
+                                    <span class="currency-label">S/</span>
+                                    <input type="number" class="balance-input" [(ngModel)]="b.value" step="0.01">
+                                </div>
+                            </div>
+                        </div>
+                        <button class="btn-save-balances" (click)="saveBankBalances()">
+                            ✓ Guardar Cambios
+                        </button>
+                    </ng-container>
+                </div>
+            </div>
+
+
+            <div class="card glass-card side-widget">
+                <div class="card-header">
+                    <h2>Resumen de Operación</h2>
+                </div>
+                <div class="summary-details">
+                    <div class="summary-line">
+                        <span class="summary-label">Total Bruto</span>
+                        <span class="summary-val text-success">S/ {{ totalBruto | number:'1.2-2' }}</span>
+                    </div>
+                    <div class="summary-line">
+                        <span class="summary-label">Comisiones</span>
+                        <span class="summary-val text-danger">S/ {{ totalComisiones | number:'1.2-2' }}</span>
+                    </div>
+                    <div class="summary-line">
+                        <span class="summary-label">Total Egresos</span>
+                        <span class="summary-val text-danger">S/ {{ totalEgresos | number:'1.2-2' }}</span>
+                    </div>
+                    <div class="summary-line highlight">
+                        <span class="summary-label">Neto Disponible</span>
+                        <span class="summary-val">S/ {{ (totalBruto - totalComisiones - totalEgresos) | number:'1.2-2'
+                            }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div *ngIf="showModal"
+        style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; display: flex; align-items: center; justify-content: center;">
+        <div
+            style="max-width: 600px; width: 90%; max-height: 90vh; overflow-y: auto; border-radius: 12px; border: none; box-shadow: 0 15px 40px rgba(0,0,0,0.15); background: white;">
+            <div
+                style="background: linear-gradient(135deg, #1e3a5f 0%, #2563eb 100%); color: white; padding: 1.5rem 2rem; display: flex; justify-content: space-between; align-items: center;">
+                <h5 style="margin: 0; font-weight: 700; font-size: 1.15rem;">Registrar Nuevo Egreso</h5>
+                <button type="button" (click)="cerrarModal()"
+                    style="background: rgba(255,255,255,0.2); border: none; color: white; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; font-size: 1.1rem; display: flex; align-items: center; justify-content: center;">&times;</button>
+            </div>
+            <div class="modal-body" style="padding: 1.5rem; background: #f8fafc;">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div>
+                        <label
+                            style="display: block; font-size: 0.85rem; font-weight: 600; color: #64748b; margin-bottom: 0.5rem;">Fecha</label>
+                        <input type="date" [(ngModel)]="nuevoEgreso.fecha"
+                            style="width: 100%; padding: 0.6rem; border: 1px solid #e2e8f0; border-radius: 6px; outline: none;">
+                    </div>
+                    <div>
+                        <label
+                            style="display: block; font-size: 0.85rem; font-weight: 600; color: #64748b; margin-bottom: 0.5rem;">Monto
+                            (S/)</label>
+                        <input type="number" [(ngModel)]="nuevoEgreso.monto" step="0.01"
+                            style="width: 100%; padding: 0.6rem; border: 1px solid #dc2626; border-radius: 6px; outline: none; color: #dc2626; font-weight: 700;">
+                    </div>
+                    <div>
+                        <label
+                            style="display: block; font-size: 0.85rem; font-weight: 600; color: #64748b; margin-bottom: 0.5rem;">Comercio
+                            / Proveedor</label>
+                        <input type="text" [(ngModel)]="nuevoEgreso.comercio" placeholder="Ej. Restaurante S.A."
+                            style="width: 100%; padding: 0.6rem; border: 1px solid #e2e8f0; border-radius: 6px; outline: none;">
+                    </div>
+                    <div>
+                        <label
+                            style="display: block; font-size: 0.85rem; font-weight: 600; color: #64748b; margin-bottom: 0.5rem;">Categoría</label>
+                        <select [(ngModel)]="nuevoEgreso.categoria"
+                            style="width: 100%; padding: 0.6rem; border: 1px solid #e2e8f0; border-radius: 6px; outline: none; background: white;">
+                            <option *ngFor="let cat of categorias" [value]="cat">{{ cat }}</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label
+                            style="display: block; font-size: 0.85rem; font-weight: 600; color: #64748b; margin-bottom: 0.5rem;">Banco
+                            / Caja de Salida</label>
+                        <select [(ngModel)]="nuevoEgreso.banco"
+                            style="width: 100%; padding: 0.6rem; border: 1px solid #e2e8f0; border-radius: 6px; outline: none; background: white;">
+                            <option *ngFor="let b of bancosLista" [value]="b">{{ b }}</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label
+                            style="display: block; font-size: 0.85rem; font-weight: 600; color: #64748b; margin-bottom: 0.5rem;">Tipo
+                            de Egreso</label>
+                        <select [(ngModel)]="nuevoEgreso.tipoEgreso"
+                            style="width: 100%; padding: 0.6rem; border: 1px solid #e2e8f0; border-radius: 6px; outline: none; background: white;">
+                            <option *ngFor="let t of tiposEgreso" [value]="t">{{ t }}</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label
+                            style="display: block; font-size: 0.85rem; font-weight: 600; color: #64748b; margin-bottom: 0.5rem;">C.
+                            Contable</label>
+                        <select [(ngModel)]="nuevoEgreso.codigoContable"
+                            style="width: 100%; padding: 0.6rem; border: 1px solid #e2e8f0; border-radius: 6px; outline: none; background: white;">
+                            <option value="">-- Seleccionar --</option>
+                            <option *ngFor="let cc of codigosContables" [value]="cc.codigo">{{ cc.name }}</option>
+                        </select>
+                    </div>
+                    <div style="grid-column: 1 / -1;">
+                        <label
+                            style="display: block; font-size: 0.85rem; font-weight: 600; color: #64748b; margin-bottom: 0.5rem;">Observaciones
+                            Adicionales</label>
+                        <textarea [(ngModel)]="nuevoEgreso.observacion" rows="2" placeholder="Detalles de la compra..."
+                            style="width: 100%; padding: 0.6rem; border: 1px solid #e2e8f0; border-radius: 6px; outline: none; resize: none;"></textarea>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer"
+                style="padding: 1.25rem 1.5rem; background: white; border-top: 1px solid #f1f5f9; display: flex; justify-content: flex-end; gap: 0.75rem;">
+                <button type="button" (click)="cerrarModal()"
+                    style="padding: 0.6rem 1.25rem; font-weight: 600; background: white; border: 1px solid #e2e8f0; border-radius: 6px; color: #475569; cursor: pointer;">Cancelar</button>
+                <button type="button" (click)="guardarEgreso()"
+                    style="padding: 0.6rem 1.25rem; font-weight: 600; background: #3b82f6; border: none; border-radius: 6px; color: white; cursor: pointer;">Guardar
+                    Egreso</button>
+            </div>
+        </div>
+    </div>
+
+    <div *ngIf="showInvoiceModal"
+        style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; display: flex; align-items: center; justify-content: center;">
+        <div
+            style="max-width: 700px; width: 90%; max-height: 90vh; overflow-y: auto; border-radius: 12px; border: none; box-shadow: 0 15px 40px rgba(0,0,0,0.15); background: white;">
+            <div
+                style="background: linear-gradient(135deg, #1e3a5f 0%, #2563eb 100%); color: white; padding: 1.5rem 2rem; display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <h5 style="margin: 0; font-weight: 700; font-size: 1.15rem;">Detalle de Factura</h5>
+                    <span *ngIf="invoiceDetail" style="opacity: 0.8; font-size: 0.85rem;">#{{ invoiceDetail.invoicenum
+                        }}</span>
+                </div>
+                <button type="button" (click)="closeInvoiceModal()"
+                    style="background: rgba(255,255,255,0.2); border: none; color: white; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; font-size: 1.1rem; display: flex; align-items: center; justify-content: center;">&times;</button>
+            </div>
+
+            <div *ngIf="loadingInvoice" style="padding: 3rem; text-align: center; background: #f8fafc;">
+                <div
+                    style="display: inline-block; width: 40px; height: 40px; border: 3px solid #e2e8f0; border-top-color: #2563eb; border-radius: 50%; animation: spin 0.8s linear infinite;">
+                </div>
+                <p style="margin-top: 1rem; color: #64748b;">Cargando detalles...</p>
+            </div>
+
+            <div *ngIf="!loadingInvoice && invoiceDetail" style="background: #f8fafc;">
+                <div
+                    style="padding: 1.5rem 2rem; display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; border-bottom: 1px solid #e2e8f0;">
+                    <div>
+                        <span
+                            style="font-size: 0.75rem; text-transform: uppercase; color: #94a3b8; font-weight: 600; letter-spacing: 0.5px;">Cliente</span>
+                        <p style="margin: 0.25rem 0 0; font-weight: 600; color: #1e293b;">{{
+                            invoiceDetail.client?.company || invoiceDetail.client?.name }}</p>
+                        <p *ngIf="invoiceDetail.client?.email" style="margin: 0; font-size: 0.85rem; color: #64748b;">{{
+                            invoiceDetail.client.email }}</p>
+                    </div>
+                    <div style="text-align: right;">
+                        <span
+                            style="font-size: 0.75rem; text-transform: uppercase; color: #94a3b8; font-weight: 600; letter-spacing: 0.5px;">Estado</span>
+                        <p style="margin: 0.25rem 0 0;">
+                            <span [style.background]="invoiceDetail.status === 'Paid' ? '#dcfce7' : '#fef3c7'"
+                                [style.color]="invoiceDetail.status === 'Paid' ? '#166534' : '#92400e'"
+                                style="padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.8rem; font-weight: 600;">{{
+                                invoiceDetail.status }}</span>
+                        </p>
+                    </div>
+                </div>
+                <div
+                    style="padding: 1rem 2rem; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; border-bottom: 1px solid #e2e8f0; background: white;">
+                    <div>
+                        <span
+                            style="font-size: 0.75rem; text-transform: uppercase; color: #94a3b8; font-weight: 600;">Fecha</span>
+                        <p style="margin: 0.25rem 0 0; font-weight: 500; color: #334155;">{{ invoiceDetail.date }}</p>
+                    </div>
+                    <div>
+                        <span
+                            style="font-size: 0.75rem; text-transform: uppercase; color: #94a3b8; font-weight: 600;">Vencimiento</span>
+                        <p style="margin: 0.25rem 0 0; font-weight: 500; color: #334155;">{{ invoiceDetail.duedate }}
+                        </p>
+                    </div>
+                    <div>
+                        <span
+                            style="font-size: 0.75rem; text-transform: uppercase; color: #94a3b8; font-weight: 600;">Método
+                            de Pago</span>
+                        <p style="margin: 0.25rem 0 0; font-weight: 500; color: #334155;">{{ invoiceDetail.paymentmethod
+                            || '-' }}</p>
+                    </div>
+                </div>
+
+                <div style="padding: 1rem 2rem;">
+                    <span
+                        style="font-size: 0.75rem; text-transform: uppercase; color: #94a3b8; font-weight: 600; letter-spacing: 0.5px;">Servicios
+                        / Items</span>
+                    <table style="width: 100%; margin-top: 0.75rem; border-collapse: collapse;">
+                        <thead>
+                            <tr style="border-bottom: 2px solid #e2e8f0;">
+                                <th
+                                    style="text-align: left; padding: 0.5rem 0; color: #64748b; font-size: 0.8rem; font-weight: 600;">
+                                    Descripción</th>
+                                <th
+                                    style="text-align: right; padding: 0.5rem 0; color: #64748b; font-size: 0.8rem; font-weight: 600;">
+                                    Monto</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr *ngFor="let item of invoiceDetail.items" style="border-bottom: 1px solid #f1f5f9;">
+                                <td style="padding: 0.6rem 0; color: #334155; font-size: 0.9rem;">{{ item.description }}
+                                </td>
+                                <td style="padding: 0.6rem 0; text-align: right; font-weight: 600; color: #1e293b;">S/
+                                    {{ item.amount | number:'1.2-2' }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div style="padding: 1rem 2rem 1.5rem; background: white; border-top: 1px solid #e2e8f0;">
+                    <div
+                        style="display: flex; justify-content: space-between; padding: 0.35rem 0; color: #64748b; font-size: 0.9rem;">
+                        <span>Subtotal</span>
+                        <span>S/ {{ invoiceDetail.subtotal | number:'1.2-2' }}</span>
+                    </div>
+                    <div *ngIf="invoiceDetail.tax > 0"
+                        style="display: flex; justify-content: space-between; padding: 0.35rem 0; color: #64748b; font-size: 0.9rem;">
+                        <span>Impuestos</span>
+                        <span>S/ {{ invoiceDetail.tax | number:'1.2-2' }}</span>
+                    </div>
+                    <div
+                        style="display: flex; justify-content: space-between; padding: 0.75rem 0 0; margin-top: 0.5rem; border-top: 2px solid #1e293b; font-weight: 700; font-size: 1.15rem; color: #1e293b;">
+                        <span>Total</span>
+                        <span>S/ {{ invoiceDetail.total | number:'1.2-2' }}</span>
+                    </div>
+                </div>
+
+                <div *ngIf="invoiceDetail.notes"
+                    style="padding: 1rem 2rem; background: #fffbeb; border-top: 1px solid #fde68a;">
+                    <span
+                        style="font-size: 0.75rem; text-transform: uppercase; color: #92400e; font-weight: 600;">Notas</span>
+                    <p style="margin: 0.25rem 0 0; font-size: 0.85rem; color: #78350f;">{{ invoiceDetail.notes }}</p>
+                </div>
+            </div>
+
+            <div
+                style="padding: 1rem 2rem; background: white; border-top: 1px solid #f1f5f9; display: flex; justify-content: flex-end; gap: 0.75rem; border-radius: 0 0 12px 12px;">
+                <button type="button" (click)="closeInvoiceModal()"
+                    style="padding: 0.6rem 1.5rem; font-weight: 600; background: #f1f5f9; border: none; border-radius: 6px; color: #475569; cursor: pointer;">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>

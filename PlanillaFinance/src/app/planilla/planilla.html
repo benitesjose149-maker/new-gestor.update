@@ -1,0 +1,513 @@
+<div class="employees-container">
+    <header class="page-header">
+        <div>
+            <h1>Planilla Mensual</h1>
+            <span class="month-badge">{{currentMonth}} {{currentYear}}</span>
+        </div>
+        <div style="display: flex; gap: 0.75rem; align-items: center;">
+            <button class="btn-export" (click)="resetFields()"
+                style="background: #f3f4f6; color: #374151; border: 1px solid #d1d5db;">
+                <span></span> Limpiar Campos
+            </button>
+            <button class="btn-export" (click)="savePlanilla()"
+                style="background: #10b981; color: white; border: none;">
+                <span></span> Guardar Planilla
+            </button>
+            <button class="btn-export" (click)="exportToExcel()">
+                <span></span> Exportar Excel
+            </button>
+        </div>
+    </header>
+
+    <div class="table-container">
+        <table class="planilla-table">
+            <thead>
+                <tr>
+                    <th rowspan="2">N°</th>
+                    <th rowspan="2" style="min-width: 200px;">Nombres y Apellidos</th>
+                    <th rowspan="2">Cargo</th>
+                    <th rowspan="2">Sueldo<br>Base</th>
+                    <th colspan="3">Ingresos Adicionales</th>
+                    <th colspan="2">Sistema Pensión</th>
+                    <th colspan="5">Descuentos</th>
+                    <th rowspan="2">Total<br>Desc.</th>
+                    <th rowspan="2">Neto a<br>Pagar</th>
+                    <th rowspan="2">Estado</th>
+                    <th rowspan="2">Acción</th>
+                    <th rowspan="2">Obs.</th>
+                </tr>
+                <tr>
+                    <th>Bonos</th>
+                    <th>Horas <br> Extras</th>
+                    <th>Monto Hora <br> Extra</th>
+                    <th>Entidad</th>
+                    <th>Descuento <br> AFO</th>
+                    <th>Adelanto</th>
+                    <th>Préstamo</th>
+                    <th>Faltas<br>Días</th>
+                    <th>Faltas<br>Horas</th>
+                    <th>Desc.<br>Adicionales</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let emp of employees; let i = index">
+                    <td>{{i + 1}}</td>
+                    <td class="text-left">
+                        <div class="employee-cell">
+                            <span class="font-medium">{{emp.nombre}} {{emp.apellidos}}</span>
+                            <span class="text-gray" style="font-size: 0.75rem;">{{emp.tipoTrabajador}}</span>
+                        </div>
+                    </td>
+                    <td><span class="badge" style="background-color: #f3f4f6;">{{emp.cargo}}</span></td>
+                    <td class="text-right">{{emp.sueldo | number:'1.2-2'}}</td>
+
+                    <td>
+                        <div style="display: flex; flex-direction: column; align-items: center; gap: 4px;">
+                            <span>{{emp.bonos | number:'1.2-2'}}</span>
+                            <a class="info-link" (click)="openBonoModal(emp)">Agregar</a>
+                        </div>
+                    </td>
+                    <td>
+                        <div style="display: flex; flex-direction: column; align-items: center; gap: 2px;">
+                            <input type="number" class="input-cell" [(ngModel)]="emp.horasExtras" placeholder="Hrs"
+                                (change)="calculateEmployee(emp)">
+                            <span *ngIf="emp.asistenciaSugerida > 0" class="suggested-badge" title="Sugerencia basada en Biométrico">
+                                Bio: {{ floor(emp.asistenciaSugerida) }}h {{ round((emp.asistenciaSugerida % 1) * 60) }}min
+                            </span>
+                        </div>
+                    </td>
+                    <td class="text-center">{{emp.montoHorasExtras | number:'1.2-2'}}</td>
+
+                    <td><span class="badge"
+                            [style.background-color]="(emp.tipoTrabajador === 'RXH' || emp.tipoTrabajador === 'HONORARIOS') ? '#dbeafe' : 'transparent'">
+                            {{emp.entidadDisplay}}
+                        </span></td>
+                    <td class="text-right text-red-600">{{emp.descuentoAfp | number:'1.2-2'}}</td>
+
+                    <td class="text-right">{{emp.adelanto | number:'1.2-2'}}</td>
+                    <td class="text-right">
+                        {{emp.prestamo | number:'1.2-2'}}
+                        <div *ngIf="emp.cuotaDetalle" class="text-gray" style="font-size: 0.7rem;">
+                            {{emp.cuotaDetalle}}
+                        </div>
+                    </td>
+
+                    <!-- Faltas column separated -->
+                    <td>
+                        <div style="display: flex; flex-direction: column; align-items: center; gap: 4px;">
+                            <input type="number" class="input-cell" style="width: 50px" [(ngModel)]="emp.faltasDias"
+                                placeholder="Días" (change)="calculateEmployee(emp)">
+                            <a class="info-link" (click)="openDeductionModal(emp, 'DIA')">Ver más</a>
+                        </div>
+                    </td>
+                    <td>
+                        <div style="display: flex; flex-direction: column; align-items: center; gap: 4px;">
+                            <input type="number" class="input-cell" style="width: 50px" [(ngModel)]="emp.faltasHoras"
+                                placeholder="Hrs" (change)="calculateEmployee(emp)">
+                            <a class="info-link" (click)="openDeductionModal(emp, 'HORA')">Ver más</a>
+                        </div>
+                    </td>
+
+                    <td>
+                        <div style="display: flex; flex-direction: column; align-items: center; gap: 4px;">
+                            <span>{{emp.descuentoAdicional | number:'1.2-2'}}</span>
+                            <a class="info-link" (click)="openAdditionalDiscountModal(emp)">Ver más</a>
+                        </div>
+                    </td>
+
+                    <td class="text-right font-medium" style="color: #b91c1c;">{{emp.totalDescuento | number:'1.2-2'}}
+                    </td>
+                    <td class="text-right neto-cell">{{emp.remuneracionNeta | number:'1.2-2'}}</td>
+
+                    <td>
+                        <select class="status-select-table" [(ngModel)]="emp.estado" (change)="calculateEmployee(emp)"
+                            [ngClass]="emp.estado.toLowerCase()">
+                            <option value="PENDIENTE">PENDIENTE</option>
+                            <option value="PAGADO">PAGADO</option>
+                        </select>
+                    </td>
+
+                    <td>
+                        <button class="btn-action-detail" (click)="openDetailModal(emp)">
+                            <i class="eye-icon"></i> Detalle
+                        </button>
+                    </td>
+
+                    <td><input type="text" class="input-cell" style="width: 100px; text-align: left;"
+                            [(ngModel)]="emp.observaciones"></td>
+                </tr>
+                <tr *ngIf="employees.length === 0">
+                    <td colspan="19" style="padding: 2rem; text-align: center;">No hay empleados registrados para
+                        generar
+                        la planilla.</td>
+                </tr>
+            </tbody>
+            <tfoot *ngIf="employees.length > 0">
+                <tr style="background-color: #f9fafb; font-weight: 700;">
+                    <td colspan="15" class="text-right" style="padding: 1rem;">TOTAL NETO A PAGAR:</td>
+                    <td class="text-right"
+                        style="padding: 1rem; color: #1e40af; font-size: 1.1rem; border-left: 2px solid #e5e7eb; border-right: 2px solid #e5e7eb;">
+                        S/ {{totalNetoAPagar | number:'1.2-2'}}
+                    </td>
+                    <td colspan="3"></td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+</div>
+
+<div class="modal-overlay" *ngIf="showDetailModal" (click)="closeDetailModal()">
+    <div class="modal-content detail-modal" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+            <h3>Detalle de Planilla: {{selectedEmployee?.nombre}} {{selectedEmployee?.apellidos}}</h3>
+            <button class="close-btn" (click)="closeDetailModal()">&times;</button>
+        </div>
+        <div class="modal-body" *ngIf="selectedEmployee">
+            <div class="employee-info-banner">
+                <div class="info-item">
+                    <span class="label">Cargo</span>
+                    <span class="value">{{selectedEmployee.cargo}}</span>
+                </div>
+                <div class="info-item">
+                    <span class="label">Tipo</span>
+                    <span class="value badge">{{selectedEmployee.tipoTrabajador}}</span>
+                </div>
+                <div class="info-item">
+                    <span class="label">Periodo</span>
+                    <span class="value">{{currentMonth}} {{currentYear}}</span>
+                </div>
+
+            </div>
+
+            <div class="detail-grid">
+                <!-- Columna Ingresos -->
+                <div class="detail-column">
+                    <h4 class="column-title ingresos">Ingresos</h4>
+                    <div class="detail-row">
+                        <span>Sueldo Base</span>
+                        <span>S/ {{selectedEmployee.sueldo | number:'1.2-2'}}</span>
+                    </div>
+                    <div class="detail-row" *ngIf="selectedEmployee.montoAsignacionFamiliar > 0">
+                        <span>Asignación Familiar</span>
+                        <span>S/ {{selectedEmployee.montoAsignacionFamiliar | number:'1.2-2'}}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span>Bonos</span>
+                        <span>S/ {{selectedEmployee.bonos | number:'1.2-2'}}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span>Horas Extras</span>
+                        <span>S/ {{selectedEmployee.montoHorasExtras | number:'1.2-2'}}</span>
+                    </div>
+                    <div class="detail-row total-row">
+                        <span>TOTAL INGRESOS</span>
+                        <span>S/ {{selectedEmployee.baseCalculo + selectedEmployee.montoHorasExtras |
+                            number:'1.2-2'}}</span>
+                    </div>
+                </div>
+
+                <!-- Columna Descuentos -->
+                <div class="detail-column">
+                    <h4 class="column-title descuentos">Descuentos</h4>
+                    <div class="detail-row">
+                        <span>Pensión ({{selectedEmployee.regimenPensionario}})</span>
+                        <span class="text-red">- S/ {{selectedEmployee.descuentoAfp | number:'1.2-2'}}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span>Adelantos</span>
+                        <span class="text-red">- S/ {{selectedEmployee.adelanto | number:'1.2-2'}}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span>Préstamos <small *ngIf="selectedEmployee.cuotaDetalle" class="text-gray">(Cuota
+                                {{selectedEmployee.cuotaDetalle}})</small></span>
+                        <span class="text-red">- S/ {{selectedEmployee.prestamo | number:'1.2-2'}}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span>Faltas (Días/Horas)</span>
+                        <span class="text-red">- S/ {{selectedEmployee.montoFaltas | number:'1.2-2'}}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span>Otros Descuentos</span>
+                        <span class="text-red">- S/ {{selectedEmployee.descuentoAdicional | number:'1.2-2'}}</span>
+                    </div>
+                    <div class="detail-row total-row">
+                        <span>TOTAL DESCUENTOS</span>
+                        <span class="text-red">- S/ {{selectedEmployee.totalDescuento | number:'1.2-2'}}</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="neto-banner">
+                <div style="font-size: 0.75rem; opacity: 0.8; margin-bottom: 4px; font-weight: 500;">
+                    S/ {{selectedEmployee.baseCalculo + selectedEmployee.montoHorasExtras | number:'1.2-2'}} (Ingr.)
+                    - S/ {{selectedEmployee.totalDescuento | number:'1.2-2'}} (Desc.)
+                </div>
+                <div class="neto-label">NETO A PAGAR</div>
+                <div class="neto-value">S/ {{selectedEmployee.remuneracionNeta | number:'1.2-2'}}</div>
+            </div>
+
+            <div class="status-footer">
+                <span>Estado de Pago:</span>
+                <select class="status-select" [(ngModel)]="selectedEmployee.estado"
+                    (change)="calculateEmployee(selectedEmployee)" [ngClass]="selectedEmployee.estado.toLowerCase()">
+                    <option value="PENDIENTE">PENDIENTE</option>
+                    <option value="PAGADO">PAGADO</option>
+                </select>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal-overlay" *ngIf="showDeductionModal" (click)="closeDeductionModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()" style="width: 400px;">
+        <div class="modal-header">
+            <h3>{{deductionDetail.title}}</h3>
+            <button class="close-btn" (click)="closeDeductionModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <p><strong>Empleado:</strong> {{deductionDetail.empName}}</p>
+            <hr class="separator">
+
+            <div class="calc-row">
+                <span>Sueldo Mensual:</span>
+                <span>S/ {{deductionDetail.sueldo | number:'1.2-2'}}</span>
+            </div>
+
+            <div class="calc-row">
+                <span>Cálculo por {{deductionDetail.type === 'DIA' ? 'Día' : 'Hora'}}:</span>
+                <span class="text-gray">{{deductionDetail.formula}}</span>
+            </div>
+
+            <div class="calc-row highlight">
+                <span>Valor Unitario:</span>
+                <div>
+                    <strong>S/ {{deductionDetail.valorUnitario | number:'1.2-2'}}</strong>
+                    <div style="font-size: 0.7rem; color: #6b7280; font-weight: 400;">(Real: {{deductionDetail.unrounded
+                        | number:'1.4-4'}})</div>
+                </div>
+            </div>
+
+            <div class="calc-row">
+                <span>Cantidad Ingresada:</span>
+                <span>{{deductionDetail.cantidad}} {{deductionDetail.type === 'DIA' ? 'días' : 'horas'}}</span>
+            </div>
+
+            <hr class="separator">
+
+            <div class="calc-row total">
+                <span>Total Descuento:</span>
+                <span>S/ {{deductionDetail.total | number:'1.2-2'}}</span>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-primary" (click)="closeDeductionModal()">Entendido</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Descuento Adicional -->
+<div class="modal-overlay" *ngIf="showAdditionalModal" (click)="closeAdditionalModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()" style="width: 700px; max-width: 90vw;">
+        <div class="modal-header">
+            <h3>Descuentos Adicionales</h3>
+            <button class="close-btn" (click)="closeAdditionalModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <!-- Employee Info Header -->
+            <div class="responsive-flex-banner"
+                style="display: flex; justify-content: space-between; margin-bottom: 1.5rem; background-color: #f9fafb; padding: 1rem; border-radius: 8px;">
+                <div>
+                    <div style="font-size: 0.85rem; color: #6b7280;">Empleado</div>
+                    <div style="font-weight: 600; color: #111827;">{{additionalDetail.empName}}</div>
+                </div>
+                <div>
+                    <div style="font-size: 0.85rem; color: #6b7280;">Cargo</div>
+                    <div style="font-weight: 600; color: #111827;">{{additionalDetail.cargo}}</div>
+                </div>
+                <div>
+                    <div style="font-size: 0.85rem; color: #6b7280; text-align: right;">Sueldo Base</div>
+                    <div style="font-weight: 600; color: #111827;">S/ {{additionalDetail.sueldo | number:'1.2-2'}}</div>
+                </div>
+            </div>
+
+            <!-- Add New Item Row -->
+            <div class="responsive-grid-row"
+                style="display: grid; grid-template-columns: 2fr 1fr 1fr auto; gap: 1rem; align-items: end; margin-bottom: 1.5rem; padding-bottom: 1.5rem; border-bottom: 1px solid #e5e7eb;">
+                <div class="form-group">
+                    <label
+                        style="display: block; font-size: 0.75rem; margin-bottom: 0.25rem; color: #374151; font-weight: 600;">Motivo</label>
+                    <input type="text" [(ngModel)]="additionalDetail.newItem.motivo" class="form-control"
+                        placeholder="Ej. Uniforme, pérdida, etc."
+                        style="width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 6px;">
+                </div>
+                <div class="form-group">
+                    <label
+                        style="display: block; font-size: 0.75rem; margin-bottom: 0.25rem; color: #374151; font-weight: 600;">Fecha</label>
+                    <input type="date" [(ngModel)]="additionalDetail.newItem.fecha" class="form-control"
+                        style="width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 6px;">
+                </div>
+                <div class="form-group">
+                    <label
+                        style="display: block; font-size: 0.75rem; margin-bottom: 0.25rem; color: #374151; font-weight: 600;">Monto
+                        (S/)</label>
+                    <input type="number" [(ngModel)]="additionalDetail.newItem.monto" class="form-control"
+                        style="width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 6px;">
+                </div>
+                <button class="btn-primary" (click)="addDiscountItem()" [disabled]="!additionalDetail.newItem.monto"
+                    style="height: 38px; display: flex; align-items: center; gap: 0.5rem; background-color: #3b82f6;">
+                    <span>+</span> Agregar
+                </button>
+            </div>
+
+            <!-- List of Items -->
+            <div style="min-height: 150px;">
+                <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem;">
+                    <thead>
+                        <tr
+                            style="border-bottom: 1px solid #e5e7eb; color: #6b7280; font-size: 0.8rem; text-transform: uppercase;">
+                            <th style="text-align: left; padding: 0.5rem;">Motivo</th>
+                            <th style="text-align: left; padding: 0.5rem;">Fecha</th>
+                            <th style="text-align: right; padding: 0.5rem;">Monto</th>
+                            <th style="padding: 0.5rem;"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let item of additionalDetail.items; let i = index"
+                            style="border-bottom: 1px solid #f3f4f6;">
+                            <td style="padding: 0.75rem 0.5rem;">{{item.motivo || '-'}}</td>
+                            <td style="padding: 0.75rem 0.5rem;">{{item.fecha | date:'dd/MM/yyyy'}}</td>
+                            <td style="padding: 0.75rem 0.5rem; text-align: right; font-weight: 600;">S/ {{item.monto |
+                                number:'1.2-2'}}</td>
+                            <td style="padding: 0.75rem 0.5rem; text-align: center;">
+                                <button (click)="removeDiscountItem(i)"
+                                    style="background: none; border: none; color: #ef4444; cursor: pointer; font-size: 1.1rem;">&times;</button>
+                            </td>
+                        </tr>
+                        <tr *ngIf="additionalDetail.items.length === 0">
+                            <td colspan="4"
+                                style="text-align: center; padding: 2rem; color: #9ca3af; font-style: italic;">
+                                No se han registrado descuentos adicionales.
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+        <div class="modal-footer">
+            <button class="btn-cancel" (click)="closeAdditionalModal()"
+                style="margin-right: 0.5rem; background: #f3f4f6; color: #374151; border: 1px solid #d1d5db; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer;">Cerrar</button>
+            <button class="btn-primary" (click)="saveAdditionalDiscount()">Guardar Cambios</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Bonos -->
+<div class="modal-overlay" *ngIf="showBonoModal" (click)="closeBonoModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()" style="width: 700px; max-width: 90vw;">
+        <div class="modal-header">
+            <h3>Gestión de Bonos</h3>
+            <button class="close-btn" (click)="closeBonoModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <!-- Employee Info Header -->
+            <div class="responsive-flex-banner"
+                style="display: flex; justify-content: space-between; margin-bottom: 1.5rem; background-color: #f9fafb; padding: 1rem; border-radius: 8px;">
+                <div>
+                    <div style="font-size: 0.85rem; color: #6b7280;">Empleado</div>
+                    <div style="font-weight: 600; color: #111827;">{{bonoDetail.empName}}</div>
+                </div>
+                <div>
+                    <div style="font-size: 0.85rem; color: #6b7280;">Cargo</div>
+                    <div style="font-weight: 600; color: #111827;">{{bonoDetail.cargo}}</div>
+                </div>
+                <div>
+                    <div style="font-size: 0.85rem; color: #6b7280; text-align: right;">Sueldo Base</div>
+                    <div style="font-weight: 600; color: #111827;">S/ {{bonoDetail.sueldo | number:'1.2-2'}}</div>
+                </div>
+            </div>
+
+            <!-- Add New Item Row -->
+            <div class="responsive-grid-row"
+                style="display: grid; grid-template-columns: 2fr 1fr 1fr auto auto; gap: 1rem; align-items: end; margin-bottom: 1.5rem; padding-bottom: 1.5rem; border-bottom: 1px solid #e5e7eb;">
+                <div class="form-group">
+                    <label
+                        style="display: block; font-size: 0.75rem; margin-bottom: 0.25rem; color: #374151; font-weight: 600;">Motivo
+                        del Bono</label>
+                    <input type="text" [(ngModel)]="bonoDetail.newItem.motivo" class="form-control"
+                        placeholder="Ej. Bono por Meta"
+                        style="width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 6px;">
+                </div>
+                <div class="form-group">
+                    <label
+                        style="display: block; font-size: 0.75rem; margin-bottom: 0.25rem; color: #374151; font-weight: 600;">Fecha</label>
+                    <input type="date" [(ngModel)]="bonoDetail.newItem.fecha" class="form-control"
+                        style="width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 6px;">
+                </div>
+                <div class="form-group">
+                    <label
+                        style="display: block; font-size: 0.75rem; margin-bottom: 0.25rem; color: #374151; font-weight: 600;">Monto
+                        (S/)</label>
+                    <input type="number" [(ngModel)]="bonoDetail.newItem.monto" class="form-control"
+                        style="width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 6px;">
+                </div>
+                <div class="form-group" style="padding-bottom: 0.5rem;">
+                    <label
+                        style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; font-weight: 600; cursor: pointer;">
+                        <input type="checkbox" [(ngModel)]="bonoDetail.newItem.permanente"> Permanente
+                    </label>
+                </div>
+                <button class="btn-primary" (click)="addBonoItem()" [disabled]="!bonoDetail.newItem.monto"
+                    style="height: 38px; display: flex; align-items: center; gap: 0.5rem; background-color: #10b981;">
+                    <span>+</span> Agregar
+                </button>
+            </div>
+
+            <!-- List of Items -->
+            <div style="min-height: 150px;">
+                <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem;">
+                    <thead>
+                        <tr
+                            style="border-bottom: 1px solid #e5e7eb; color: #6b7280; font-size: 0.8rem; text-transform: uppercase;">
+                            <th style="text-align: left; padding: 0.5rem;">Motivo</th>
+                            <th style="text-align: left; padding: 0.5rem;">Fecha</th>
+                            <th style="text-align: center; padding: 0.5rem;">Tipo</th>
+                            <th style="text-align: right; padding: 0.5rem;">Monto</th>
+                            <th style="padding: 0.5rem;"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let item of bonoDetail.items; let i = index"
+                            style="border-bottom: 1px solid #f3f4f6;">
+                            <td style="padding: 0.75rem 0.5rem;">{{item.motivo || '-'}}</td>
+                            <td style="padding: 0.75rem 0.5rem;">{{item.fecha | date:'dd/MM/yyyy'}}</td>
+                            <td style="padding: 0.75rem 0.5rem; text-align: center;">
+                                <span *ngIf="item.permanente" class="badge"
+                                    style="background-color: #d1fae5; color: #065f46; border: 1px solid #34d399; font-size: 0.7rem;">Fijo</span>
+                                <span *ngIf="!item.permanente" class="badge"
+                                    style="background-color: #f3f4f6; color: #4b5563; border: 1px solid #e5e7eb; font-size: 0.7rem;">Único</span>
+                            </td>
+                            <td style="padding: 0.75rem 0.5rem; text-align: right; font-weight: 600; color: #10b981;">+
+                                S/ {{item.monto | number:'1.2-2'}}</td>
+                            <td style="padding: 0.75rem 0.5rem; text-align: center;">
+                                <button (click)="removeBonoItem(i)"
+                                    style="background: none; border: none; color: #ef4444; cursor: pointer; font-size: 1.1rem;">&times;</button>
+                            </td>
+                        </tr>
+                        <tr *ngIf="bonoDetail.items.length === 0">
+                            <td colspan="5"
+                                style="text-align: center; padding: 2rem; color: #9ca3af; font-style: italic;">
+                                No se han registrado bonos para este empleado.
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-cancel" (click)="closeBonoModal()"
+                style="margin-right: 0.5rem; background: #f3f4f6; color: #374151; border: 1px solid #d1d5db; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer;">Cerrar</button>
+            <button class="btn-primary" (click)="saveBonos()">Guardar Cambios</button>
+        </div>
+    </div>
+</div>

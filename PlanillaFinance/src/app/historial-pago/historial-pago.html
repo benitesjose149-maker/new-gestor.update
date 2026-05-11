@@ -1,0 +1,150 @@
+<div class="historial-container">
+    <header class="page-header">
+        <div>
+            <h1>Consultar Historial de Pagos</h1>
+            <span class="subtitle">Consulta las planillas guardadas por periodo</span>
+        </div>
+    </header>
+
+    <!-- Filtro de Periodo -->
+    <div class="filter-section">
+        <div class="filter-card">
+            <div class="filter-row">
+                <div class="filter-group">
+                    <label>Seleccionar Año</label>
+                    <select class="form-control" [(ngModel)]="selectedYear" (change)="onYearChange()">
+                        <option *ngFor="let year of years" [value]="year">{{year}}</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Seleccionar Mes</label>
+                    <select class="form-control" [(ngModel)]="selectedPeriodo">
+                        <option value="" disabled>-- Seleccione un mes --</option>
+                        <option *ngFor="let p of periodos" [value]="p.periodo">
+                            {{p.mes | titlecase}}
+                        </option>
+                    </select>
+                </div>
+                <button class="btn-consultar" (click)="consultarPeriodo()" [disabled]="!selectedPeriodo || loading">
+                    <span *ngIf="!loading">Consultar</span>
+                    <span *ngIf="loading">Cargando...</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="empty-state" *ngIf="!planillaData && !loading && !errorNotFound">
+        <div class="empty-icon">🔍</div>
+        <h3>Selecciona un periodo</h3>
+        <p>Elige un periodo del listado y presiona "Consultar" para ver la planilla guardada.</p>
+    </div>
+
+    <div class="empty-state" *ngIf="errorNotFound && !loading">
+        <div class="empty-icon">📋</div>
+        <h3>Planilla No Encontrada</h3>
+        <p>Aún no se ha guardado la planilla para este mes. Ve a la sección Planilla y presiona "Guardar Planilla".</p>
+    </div>
+
+    <div *ngIf="planillaData" class="result-section">
+        <div class="summary-cards">
+            <div class="summary-card">
+                <div class="card-label">Periodo</div>
+                <div class="card-value period">{{planillaData.mes}} {{planillaData['año']}}</div>
+            </div>
+            <div class="summary-card">
+                <div class="card-label">Empleados</div>
+                <div class="card-value">{{planillaData.empleados.length}}</div>
+            </div>
+            <div class="summary-card">
+                <div class="card-label">Total Sueldos</div>
+                <div class="card-value blue">S/ {{getTotalSueldos() | number:'1.2-2'}}</div>
+            </div>
+            <div class="summary-card">
+                <div class="card-label">Total Bonos</div>
+                <div class="card-value green">S/ {{getTotalBonos() | number:'1.2-2'}}</div>
+            </div>
+            <div class="summary-card">
+                <div class="card-label">Total Descuentos</div>
+                <div class="card-value red">S/ {{getTotalDescuentos() | number:'1.2-2'}}</div>
+            </div>
+            <div class="summary-card">
+                <div class="card-label">Total Neto</div>
+                <div class="card-value neto">S/ {{getTotalNeto() | number:'1.2-2'}}</div>
+            </div>
+        </div>
+
+        <!-- Tabla de Detalle -->
+        <div class="table-container">
+            <table class="historial-table">
+                <thead>
+                    <tr>
+                        <th>N°</th>
+                        <th style="text-align: left; min-width: 180px;">Nombres y Apellidos</th>
+                        <th>Cargo</th>
+                        <th>Tipo</th>
+                        <th>Sueldo Base</th>
+                        <th>Bonos</th>
+                        <th>Hrs Extra</th>
+                        <th>Pensión</th>
+                        <th>Adelanto</th>
+                        <th>Préstamo</th>
+                        <th>Faltas</th>
+                        <th>Desc. Adic.</th>
+                        <th>Total Desc.</th>
+                        <th>Neto a Pagar</th>
+                        <th>Estado</th>
+                        <th>Obs.</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let emp of planillaData.empleados; let i = index">
+                        <td>{{i + 1}}</td>
+                        <td style="text-align: left;">
+                            <div style="font-weight: 600;">{{emp.nombre}} {{emp.apellidos}}</div>
+                        </td>
+                        <td><span class="badge">{{emp.cargo}}</span></td>
+                        <td>
+                            <span class="badge type-badge"
+                                [style.background-color]="emp.tipoTrabajador === 'Honorarios' || emp.tipoTrabajador === 'HONORARIOS' || emp.tipoTrabajador === 'RXH' ? '#fef3c7' : '#dbeafe'"
+                                [style.color]="emp.tipoTrabajador === 'Honorarios' || emp.tipoTrabajador === 'HONORARIOS' || emp.tipoTrabajador === 'RXH' ? '#92400e' : '#1e40af'">
+                                {{emp.tipoTrabajador}}
+                            </span>
+                        </td>
+                        <td class="text-right">{{emp.sueldo | number:'1.2-2'}}</td>
+                        <td class="text-right" style="color: #10b981;">{{emp.bonos | number:'1.2-2'}}</td>
+                        <td class="text-right">{{emp.montoHorasExtras | number:'1.2-2'}}</td>
+                        <td class="text-right" style="color: #b91c1c;">{{emp.descuentoAfp | number:'1.2-2'}}</td>
+                        <td class="text-right">{{emp.adelanto | number:'1.2-2'}}</td>
+                        <td class="text-right">{{emp.prestamo | number:'1.2-2'}}</td>
+                        <td class="text-right">{{emp.montoFaltas | number:'1.2-2'}}</td>
+                        <td class="text-right">{{emp.descuentoAdicional | number:'1.2-2'}}</td>
+                        <td class="text-right" style="color: #b91c1c; font-weight: 600;">{{emp.totalDescuento |
+                            number:'1.2-2'}}</td>
+                        <td class="text-right neto-cell">{{emp.remuneracionNeta | number:'1.2-2'}}</td>
+                        <td>
+                            <span class="badge" 
+                                [style.background-color]="emp.estado === 'PAGADO' ? '#d1fae5' : '#fef3c7'"
+                                [style.color]="emp.estado === 'PAGADO' ? '#065f46' : '#92400e'">{{emp.estado || '-'}}</span>
+                        </td>
+                        <td>{{emp.observaciones || '-'}}</td>
+                    </tr>
+                </tbody>
+                <tfoot>
+                    <tr class="totals-row">
+                        <td colspan="4" style="text-align: right; font-weight: 700;">TOTALES</td>
+                        <td class="text-right" style="font-weight: 700;">{{getTotalSueldos() | number:'1.2-2'}}</td>
+                        <td class="text-right" style="font-weight: 700; color: #10b981;">{{getTotalBonos() |
+                            number:'1.2-2'}}</td>
+                        <td colspan="6"></td>
+                        <td class="text-right" style="font-weight: 700; color: #b91c1c;">{{getTotalDescuentos() |
+                            number:'1.2-2'}}</td>
+                        <td class="text-right" style="font-weight: 700; color: #059669; font-size: 1rem;">
+                            {{getTotalNeto() | number:'1.2-2'}}</td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+</div>

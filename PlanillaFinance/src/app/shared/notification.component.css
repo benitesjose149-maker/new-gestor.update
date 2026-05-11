@@ -1,0 +1,249 @@
+/* Notification Component styles - Toasts and Custom Confirm Modal */
+.toast-container {
+    position: fixed;
+    top: 24px;
+    right: 24px;
+    z-index: 1100;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    pointer-events: none;
+}
+
+.toast {
+    pointer-events: auto;
+    min-width: 320px;
+    max-width: 450px;
+    background: #ffffff;
+    padding: 16px 20px;
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    animation: slideInDown 0.4s ease-out forwards;
+    cursor: pointer;
+    transition: transform 0.2s;
+    border-left: 6px solid #cbd5e1;
+}
+
+.toast:hover {
+    transform: scale(1.02);
+}
+
+.toast.success {
+    border-left-color: #10b981;
+}
+
+.toast.error {
+    border-left-color: #ef4444;
+}
+
+.toast.warning {
+    border-left-color: #f59e0b;
+}
+
+.toast.info {
+    border-left-color: #3b82f6;
+}
+
+.toast-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.toast.success .toast-icon {
+    background: #ecfdf5;
+    color: #10b981;
+}
+
+.toast.error .toast-icon {
+    background: #fef2f2;
+    color: #ef4444;
+}
+
+.toast.warning .toast-icon {
+    background: #fffbeb;
+    color: #f59e0b;
+}
+
+.toast.info .toast-icon {
+    background: #eff6ff;
+    color: #3b82f6;
+}
+
+.toast-icon svg {
+    width: 20px;
+    height: 20px;
+}
+
+.toast-message {
+    flex-grow: 1;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: #1e293b;
+}
+
+.toast-close {
+    background: transparent;
+    border: none;
+    font-size: 1.5rem;
+    color: #94a3b8;
+    cursor: pointer;
+    padding: 4px;
+    line-height: 1;
+}
+
+@keyframes slideInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-40px) scale(0.9);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* Modal Backbone - Custom Confirmation */
+.modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(8px);
+    z-index: 1200;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: fadeIn 0.3s ease-out;
+}
+
+.modal-container {
+    width: 90%;
+    max-width: 440px;
+    background: #ffffff;
+    border-radius: 24px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    overflow: hidden;
+    animation: zoomIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.modal-content {
+    padding: 32px;
+}
+
+.modal-header h3 {
+    font-size: 1.5rem;
+    margin: 0;
+    color: #0f172a;
+    font-weight: 800;
+}
+
+.modal-body {
+    margin: 20px 0 32px 0;
+    color: #475569;
+    font-size: 1.0625rem;
+    line-height: 1.6;
+}
+
+.modal-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+.modal-actions button {
+    padding: 14px;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: none;
+}
+
+.btn-cancel {
+    background: #f1f5f9;
+    color: #64748b;
+}
+
+.btn-cancel:hover {
+    background: #e2e8f0;
+    color: #475569;
+}
+
+.btn-confirm {
+    background: #2563eb;
+    color: white;
+}
+
+.btn-confirm:hover {
+    background: #1d4ed8;
+    box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.3);
+    transform: translateY(-2px);
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes zoomIn {
+    from {
+        opacity: 0;
+        transform: scale(0.9) translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+/* Checkbox specific styling */
+.modal-checkbox-container {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 16px;
+    padding: 14px;
+    background: #f8fafc;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: background 0.2s;
+    border: 1px solid #e2e8f0;
+}
+
+.modal-checkbox-container:hover {
+    background: #f1f5f9;
+}
+
+.modal-checkbox-container input {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+    margin: 0;
+}
+
+.modal-checkbox-container label {
+    font-size: 0.95rem;
+    color: #475569;
+    cursor: pointer;
+    margin: 0;
+    line-height: 1.4;
+    font-weight: 500;
+}

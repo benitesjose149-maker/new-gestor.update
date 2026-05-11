@@ -1,0 +1,353 @@
+<div class="employees-container">
+    <header class="page-header">
+        <h1>Gestión de Empleados</h1>
+        <button class="add-btn" (click)="openAddModal()">+ Nuevo Empleado</button>
+    </header>
+
+    <div class="controls-bar">
+        <div class="search-box">
+            <span class="search-icon">🔍</span>
+            <input type="text" placeholder="Buscar por nombre, cargo o departamento..." [(ngModel)]="searchTerm"
+                (input)="filterEmployees()">
+        </div>
+    </div>
+
+    <div class="table-container">
+        <table class="employees-table">
+            <thead>
+                <tr>
+                    <th>Nombre</th>
+                    <th>Cargo</th>
+                    <th>Departamento</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let employee of filteredEmployees">
+                    <td>
+                        <div class="user-info">
+                            <div class="avatar">{{(employee.nombre || '?').charAt(0)}}{{(employee.apellidos ||
+                                '').charAt(0)}}</div>
+                            <div>
+                                <div class="font-medium">{{employee.nombre}} {{employee.apellidos}}</div>
+                                <div class="text-sm text-gray">{{employee.email}}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>{{employee.cargo}}</td>
+                    <td>
+                        <span class="badge badge-gray">{{employee.departamento}}</span>
+                    </td>
+                    <td>
+                        <span class="status-indicator"
+                            [ngClass]="{'status-active': employee.estado === 'Activo', 'status-inactive': employee.estado !== 'Activo'}"></span>
+                        {{employee.estado}}
+                    </td>
+                    <td>
+                        <div class="actions">
+                            <button class="btn-action view" (click)="viewEmployee(employee)">Ver</button>
+                            <button class="btn-action edit" (click)="editEmployee(employee)">Editar</button>
+                            <button class="btn-action delete" (click)="openLeaveModal(employee)">Dar de baja</button>
+                        </div>
+                    </td>
+                </tr>
+                <tr *ngIf="filteredEmployees.length === 0">
+                    <td colspan="5" style="text-align: center; padding: 20px;">No se encontraron empleados.</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="modal-overlay" *ngIf="showAddModal">
+    <div class="modal-content large-modal" [class.view-mode]="isViewOnly" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+            <h2>{{ isViewOnly ? 'Detalles del Empleado' : (newEmployee._id ? 'Editar Empleado' : 'Registrar Nuevo
+                Empleado') }}</h2>
+            <button class="close-btn" (click)="closeAddModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <form (ngSubmit)="saveEmployee()">
+
+                <div class="form-section">
+                    <h3 class="section-title">Identificación (RENIEC)</h3>
+                    <div class="form-row">
+                        <div class="form-group search-group">
+                            <label>DNI *</label>
+                            <div class="dni-input-container">
+                                <input type="text" [(ngModel)]="newEmployee.dni" name="dni" placeholder="Ej: 72459812"
+                                    maxlength="8" required class="form-control" inputmode="numeric"
+                                    [ngClass]="{'invalid-field': submitted && !newEmployee.dni}" [disabled]="isViewOnly"
+                                    (keypress)="$event.charCode >= 48 && $event.charCode <= 57 ? true : $event.preventDefault()"
+                                    (paste)="onDniInput()" (input)="onDniInput()">
+                                <button type="button" class="btn-search" (click)="searchDni()"
+                                    [disabled]="searchingDni || isViewOnly">
+                                    <span *ngIf="!searchingDni">
+                                        <i class="fas fa-search"></i> Buscar
+                                    </span>
+                                    <span *ngIf="searchingDni" class="searching-spinner">
+                                        <i class="fas fa-spinner fa-spin"></i>
+                                    </span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h3 class="section-title">Información Personal</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Nombres *</label>
+                            <input type="text" [(ngModel)]="newEmployee.nombre" name="nombre" placeholder="Nombres"
+                                [ngClass]="{'invalid-field': submitted && !newEmployee.nombre}" required
+                                [disabled]="isViewOnly" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label>Apellidos *</label>
+                            <input type="text" [(ngModel)]="newEmployee.apellidos" name="apellidos"
+                                [ngClass]="{'invalid-field': submitted && !newEmployee.apellidos}"
+                                [disabled]="isViewOnly" placeholder="Apellidos" required class="form-control">
+                        </div>
+                    </div>
+                    <div class="form-row three-col">
+                        <div class="form-group">
+                            <label>Fecha Nacimiento *</label>
+                            <input type="date" [(ngModel)]="newEmployee.fechaNacimiento" name="fechaNacimiento"
+                                [ngClass]="{'invalid-field': submitted && !newEmployee.fechaNacimiento}" required
+                                [disabled]="isViewOnly" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label>Sexo</label>
+                            <select [(ngModel)]="newEmployee.sexo" name="sexo" class="form-control"
+                                [disabled]="isViewOnly">
+                                <option value="">Seleccione</option>
+                                <option value="Masculino">Masculino</option>
+                                <option value="Femenino">Femenino</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Nacionalidad</label>
+                            <input type="text" [(ngModel)]="newEmployee.nacionalidad" name="nacionalidad"
+                                [disabled]="isViewOnly" class="form-control">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Dirección *</label>
+                            <input type="text" [(ngModel)]="newEmployee.direccion" name="direccion"
+                                [ngClass]="{'invalid-field': submitted && !newEmployee.direccion}"
+                                [disabled]="isViewOnly" placeholder="Dirección completa" required class="form-control">
+                        </div>
+                    </div>
+                    <div class="form-row three-col">
+                        <div class="form-group">
+                            <label>Teléfono *</label>
+                            <input type="text" [(ngModel)]="newEmployee.telefono" name="telefono"
+                                [ngClass]="{'invalid-field': submitted && !newEmployee.telefono}"
+                                [disabled]="isViewOnly" placeholder="Ej: +51 987654321" required class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label>Email Personal</label>
+                            <input type="email" [(ngModel)]="newEmployee.email" name="email" class="form-control"
+                                [disabled]="isViewOnly">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Contacto Emergencia</label>
+                            <input type="text" [(ngModel)]="newEmployee.contactoEmergencia" name="contactoEmergencia"
+                                [disabled]="isViewOnly" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label>Teléfono Emergencia</label>
+                            <input type="text" [(ngModel)]="newEmployee.numeroEmergencia" name="numeroEmergencia"
+                                [disabled]="isViewOnly" class="form-control">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h3 class="section-title">Información Laboral</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Cargo *</label>
+                            <select [(ngModel)]="newEmployee.cargo" name="cargo" required class="form-control"
+                                [ngClass]="{'invalid-field': submitted && !newEmployee.cargo}" [disabled]="isViewOnly"
+                                (change)="onCargoChange()">
+                                <option value="" disabled>Seleccione un Cargo</option>
+                                <option *ngFor="let cargo of cargos" [value]="cargo">{{cargo}}</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Departamento *</label>
+                            <select [(ngModel)]="newEmployee.departamento" name="departamento" required
+                                class="form-control" [disabled]="!newEmployee.cargo || isViewOnly"
+                                [ngClass]="{'invalid-field': submitted && !newEmployee.departamento}">
+                                <option value="" disabled>Seleccione un Departamento</option>
+                                <option *ngFor="let dept of availableDepartamentos" [value]="dept">{{dept}}</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row three-col">
+                        <div class="form-group">
+                            <label>Tipo Trabajador</label>
+                            <select [(ngModel)]="newEmployee.tipoTrabajador" name="tipoTrabajador" class="form-control"
+                                [disabled]="isViewOnly">
+                                <option value="PLANILLA">Planilla</option>
+                                <option value="HONORARIOS">Recibo por Honorarios</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Régimen Pensionario</label>
+                            <select [(ngModel)]="newEmployee.regimenPensionario" name="regimenPensionario"
+                                class="form-control" [disabled]="newEmployee.tipoTrabajador === 'RXH' || isViewOnly">
+                                <option value="SNP/ONP">SNP (ONP)</option>
+                                <option value="INTEGRA">AFP Integra</option>
+                                <option value="PRIMA">AFP Prima</option>
+                                <option value="HABITAT">AFP Habitat</option>
+                                <option value="PROFUTURO">AFP Profuturo</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Sueldo Básico</label>
+                            <input type="number" [(ngModel)]="newEmployee.sueldo" name="sueldo" class="form-control"
+                                [disabled]="isViewOnly">
+
+                            <div class="form-group-checkbox small-text">
+                                <input type="checkbox" [(ngModel)]="newEmployee.calculoAfpMinimo"
+                                    name="calculoAfpMinimo" id="calcAfp"
+                                    [disabled]="newEmployee.tipoTrabajador === 'RXH' || isViewOnly">
+                                <label for="calcAfp">Cálculo AFP sobre Mínimo (1130)</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h3 class="section-title">Detalle Contrato</h3>
+                    <div class="form-row three-col">
+                        <div class="form-group">
+                            <label>Fecha Inicio</label>
+                            <input type="date" [(ngModel)]="newEmployee.fechaInicio" name="fechaInicio"
+                                [disabled]="isViewOnly" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label>Fin Contrato</label>
+                            <input type="date" [(ngModel)]="newEmployee.fechaFinContrato" name="fechaFinContrato"
+                                [disabled]="isViewOnly" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label>Régimen Laboral</label>
+                            <input type="text" [(ngModel)]="newEmployee.horarioTrabajo" name="horarioTrabajo"
+                                [disabled]="isViewOnly" class="form-control" placeholder="Ej: Full Time">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h3 class="section-title">Configuración de Asistencia (Biométrico)</h3>
+                    <div class="form-row three-col">
+                        <div class="form-group">
+                            <label>ID Biométrico (Máquina)</label>
+                            <input type="number" [(ngModel)]="newEmployee.biometricId" name="biometricId"
+                                [disabled]="isViewOnly" class="form-control" placeholder="Ej: 15">
+                        </div>
+                        <div class="form-group">
+                            <label>Hora Entrada (Puntualidad)</label>
+                            <input type="time" [(ngModel)]="newEmployee.entryTime" name="entryTime"
+                                [disabled]="isViewOnly" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label>Hora Salida</label>
+                            <input type="time" [(ngModel)]="newEmployee.exitTime" name="exitTime"
+                                [disabled]="isViewOnly" class="form-control">
+                        </div>
+                    </div>
+                    <div class="form-group-checkbox mt-2" *ngIf="!isViewOnly">
+                        <input type="checkbox" [(ngModel)]="newEmployee.syncToBiometric" name="syncToBiometric" id="syncBio">
+                        <label for="syncBio" style="color: #2563eb; font-weight: bold; cursor: pointer;">
+                            <i class="fa-solid fa-fingerprint"></i> ¿Registrar/Actualizar en Equipo Biométrico ahora?
+                        </label>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h3 class="section-title">Datos Bancarios</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Banco</label>
+                            <select [(ngModel)]="newEmployee.banco" name="banco" class="form-control"
+                                [disabled]="isViewOnly">
+                                <option value="">Seleccione</option>
+                                <option value="BCP">BCP</option>
+                                <option value="BBVA">BBVA</option>
+                                <option value="INTERBANK">Interbank</option>
+                                <option value="SCOTIABANK">Scotiabank</option>
+                                <option value="NACION">Banco de la Nación</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Tipo Cuenta</label>
+                            <select [(ngModel)]="newEmployee.tipoCuenta" name="tipoCuenta" class="form-control"
+                                [disabled]="isViewOnly">
+                                <option value="">Seleccione</option>
+                                <option value="AHORROS">Ahorros</option>
+                                <option value="CORRIENTE">Corriente</option>
+                                <option value="CTS">CTS</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Número Cuenta</label>
+                            <input type="text" [(ngModel)]="newEmployee.numeroCuenta" name="numeroCuenta"
+                                [disabled]="isViewOnly" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label>CCI</label>
+                            <input type="text" [(ngModel)]="newEmployee.cci" name="cci" class="form-control"
+                                [disabled]="isViewOnly">
+                        </div>
+                    </div>
+                </div>
+
+
+                <div class="modal-actions">
+                    <button type="button" class="btn-cancel" (click)="closeAddModal()">{{ isViewOnly ? 'Cerrar' :
+                        'Cancelar' }}</button>
+                    <button type="submit" class="btn-save" *ngIf="!isViewOnly">{{ newEmployee._id ? 'Actualizar Datos' :
+                        'Guardar
+                        Empleado' }}</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Leave Modal -->
+<div class="modal-overlay" *ngIf="showLeaveModal" (click)="closeLeaveModal()">
+    <div class="modal-content leave-modal" (click)="$event.stopPropagation()">
+        <header class="modal-header">
+            <h2>Dar de Baja Empleado</h2>
+            <button class="close-btn" (click)="closeLeaveModal()">&times;</button>
+        </header>
+
+        <div class="modal-body">
+            <p>¿Está seguro de dar de baja a <strong>{{selectedEmployeeForLeave?.nombre}}
+                    {{selectedEmployeeForLeave?.apellidos}}</strong>?</p>
+
+            <div class="form-group mt-4">
+                <label>Motivo de la baja *</label>
+                <textarea [(ngModel)]="leaveReason" name="leaveReason" class="form-control"
+                    placeholder="Ingrese el motivo detallado de la baja..." rows="10"></textarea>
+            </div>
+        </div>
+
+        <div class="modal-actions">
+            <button type="button" class="btn-cancel" (click)="closeLeaveModal()">Cancelar</button>
+            <button type="button" class="btn-save btn-danger" (click)="confirmLeave()">Confirmar Baja</button>
+        </div>
+    </div>
+</div>

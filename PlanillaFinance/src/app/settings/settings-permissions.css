@@ -1,0 +1,476 @@
+.settings-container {
+    padding: 1.5rem;
+    background: #f9fafb;
+    min-height: calc(100vh - 100px);
+}
+
+.settings-header {
+    margin-bottom: 2rem;
+}
+
+.settings-header h2 {
+    color: #111827;
+    font-size: 1.875rem;
+    font-weight: 700;
+}
+
+.settings-header p {
+    color: #6b7280;
+    margin-top: 0.5rem;
+}
+
+.users-table-container {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    overflow-x: auto;
+}
+
+.users-table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+}
+
+.users-table th {
+    background: #f8fafc;
+    padding: 0.75rem 0.5rem;
+    text-align: left;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    color: #64748b;
+    border-bottom: 1px solid #e2e8f0;
+    white-space: nowrap;
+}
+
+.users-table td {
+    padding: 0.875rem 0.5rem;
+    border-bottom: 1px solid #f1f5f9;
+    color: #334155;
+    font-size: 0.8rem;
+}
+
+/* Column widths for the main permissions table */
+.users-table th:first-child,
+.users-table td:first-child {
+    width: 18%;
+    padding-left: 0.75rem;
+}
+
+.users-table th:nth-child(2),
+.users-table td:nth-child(2) {
+    width: 10%;
+}
+
+.users-table th:nth-child(3),
+.users-table td:nth-child(3) {
+    width: 8%;
+}
+
+/* Permission toggle columns (columns 4-12) */
+.users-table th:nth-child(n+4):nth-child(-n+12),
+.users-table td:nth-child(n+4):nth-child(-n+12) {
+    width: 5.5%;
+}
+
+/* Action column (last) */
+.users-table th:last-child,
+.users-table td:last-child {
+    width: 4.5%;
+    padding-right: 0.75rem;
+}
+
+.text-center {
+    text-align: center;
+}
+
+.user-email strong {
+    font-size: 0.78rem;
+    word-break: break-all;
+}
+
+.role-badge {
+    padding: 0.2rem 0.5rem;
+    border-radius: 9999px;
+    font-size: 0.65rem;
+    font-weight: 600;
+    background: #e2e8f0;
+    color: #475569;
+    white-space: nowrap;
+}
+
+.role-badge.super {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.full-access {
+    color: #16a34a;
+    font-size: 0.7rem;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+/* Switch UI - Compact */
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 36px;
+    height: 20px;
+}
+
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #cbd5e1;
+    transition: .4s;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 14px;
+    width: 14px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: .4s;
+}
+
+input:checked+.slider {
+    background-color: #2563eb;
+}
+
+input:checked+.slider:before {
+    transform: translateX(16px);
+}
+
+.slider.round {
+    border-radius: 20px;
+}
+
+.slider.round:before {
+    border-radius: 50%;
+}
+
+.loading {
+    padding: 3rem;
+    text-align: center;
+    color: #64748b;
+}
+
+/* Security Section Styles */
+.no-blocks {
+    padding: 2rem;
+    text-align: center;
+    color: #64748b;
+    font-style: italic;
+}
+
+.fail-badge {
+    background: #fee2e2;
+    color: #991b1b;
+    padding: 0.2rem 0.6rem;
+    border-radius: 9999px;
+    font-weight: 700;
+}
+
+.unblock-btn {
+    background-color: #2563eb;
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.unblock-btn:hover {
+    background-color: #1d4ed8;
+}
+
+.unblock-btn:active {
+    transform: translateY(1px);
+}
+
+.settings-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    align-items: start;
+}
+
+.settings-card {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    border: 1px solid #e2e8f0;
+}
+
+/* Mejoras para tablas mini */
+.users-table.minis {
+    font-size: 0.85rem;
+    table-layout: auto;
+}
+
+.users-table.minis th,
+.users-table.minis td {
+    padding: 0.75rem 0.5rem;
+}
+
+.fail-count {
+    background: #fee2e2;
+    color: #ef4444;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    font-weight: 600;
+}
+
+/* Formulario Crear Usuario */
+.create-user-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    margin-top: 1rem;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.form-group label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #4b5563;
+}
+
+.form-group input {
+    padding: 0.75rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 0.9rem;
+}
+
+.password-input-group {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.password-input-group input {
+    flex-grow: 1;
+}
+
+.generate-btn {
+    padding: 0.5rem 1rem;
+    background: #f1f5f9;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #475569;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.generate-btn:hover {
+    background: #e2e8f0;
+}
+
+.permissions-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 0.75rem;
+    padding: 1rem;
+    background: #f8fafc;
+    border-radius: 8px;
+    border: 1px solid #f1f5f9;
+}
+
+.perm-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.85rem;
+    color: #64748b;
+    cursor: pointer;
+}
+
+.create-btn {
+    margin-top: 0.5rem;
+    padding: 1rem;
+    background: #2563eb;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.create-btn:hover:not(:disabled) {
+    background: #1d4ed8;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2);
+}
+
+.create-btn:disabled {
+    background: #94a3b8;
+    cursor: not-allowed;
+}
+
+/* Estilos previos existentes corregidos */
+.name-input {
+    padding: 0.35rem 0.5rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    font-size: 0.78rem;
+    color: #334155;
+    width: 100%;
+    max-width: 140px;
+}
+
+.name-input:focus {
+    outline: none;
+    border-color: #2563eb;
+    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
+}
+
+.delete-btn-user {
+    background: transparent;
+    color: #94a3b8;
+    border: none;
+    padding: 0.3rem;
+    border-radius: 6px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    line-height: 1;
+}
+
+.delete-btn-user:hover {
+    background: #fef2f2;
+    color: #ef4444;
+    transform: scale(1.15);
+}
+
+.protected-badge {
+    font-size: 0.85rem;
+    opacity: 0.5;
+}
+
+/* ============================
+   RESPONSIVE: Pantallas medianas (laptops 14"-15", ~1280px-1366px)
+   ============================ */
+@media (max-width: 1366px) {
+    .settings-container {
+        padding: 1rem;
+    }
+
+    .users-table th {
+        padding: 0.6rem 0.35rem;
+        font-size: 0.65rem;
+    }
+
+    .users-table td {
+        padding: 0.75rem 0.35rem;
+        font-size: 0.75rem;
+    }
+
+    .user-email strong {
+        font-size: 0.72rem;
+    }
+
+    .name-input {
+        max-width: 110px;
+        font-size: 0.72rem;
+        padding: 0.3rem 0.4rem;
+    }
+
+    .switch {
+        width: 32px;
+        height: 18px;
+    }
+
+    .slider:before {
+        height: 12px;
+        width: 12px;
+    }
+
+    input:checked+.slider:before {
+        transform: translateX(14px);
+    }
+
+    .full-access {
+        font-size: 0.6rem;
+    }
+
+    .role-badge {
+        font-size: 0.6rem;
+        padding: 0.15rem 0.4rem;
+    }
+
+    .settings-grid {
+        gap: 1.5rem;
+    }
+}
+
+/* ============================
+   RESPONSIVE: Pantallas pequeñas (laptops 13", ~1024px-1279px)
+   ============================ */
+@media (max-width: 1280px) {
+    .users-table th {
+        padding: 0.5rem 0.25rem;
+        font-size: 0.6rem;
+    }
+
+    .users-table td {
+        padding: 0.6rem 0.25rem;
+        font-size: 0.7rem;
+    }
+
+    .user-email strong {
+        font-size: 0.68rem;
+    }
+
+    .name-input {
+        max-width: 90px;
+        font-size: 0.68rem;
+    }
+
+    .switch {
+        width: 28px;
+        height: 16px;
+    }
+
+    .slider:before {
+        height: 10px;
+        width: 10px;
+    }
+
+    input:checked+.slider:before {
+        transform: translateX(12px);
+    }
+
+    .full-access {
+        font-size: 0.55rem;
+    }
+
+    .settings-grid {
+        grid-template-columns: 1fr;
+    }
+}

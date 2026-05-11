@@ -1,0 +1,256 @@
+:host {
+    display: block;
+    padding: 2rem;
+    background-color: #f9fafb;
+    min-height: 100vh;
+}
+
+.page-header {
+    margin-bottom: 2rem;
+}
+
+.page-header h1 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #111827;
+    margin: 0 0 0.25rem 0;
+}
+
+.subtitle {
+    color: #6b7280;
+    font-size: 0.9rem;
+}
+
+/* Filter Section */
+.filter-section {
+    margin-bottom: 2rem;
+}
+
+.filter-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.filter-row {
+    display: flex;
+    gap: 1.5rem;
+    align-items: flex-end;
+    flex-wrap: wrap;
+}
+
+.filter-group {
+    flex: 1;
+    min-width: 150px;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.filter-group label {
+    display: block;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.form-control {
+    width: 100%;
+    padding: 0.65rem 0.75rem;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    color: #374151;
+    background: white;
+    transition: border-color 0.2s;
+}
+
+.form-control:focus {
+    border-color: #6366f1;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.btn-consultar {
+    background: linear-gradient(135deg, #6366f1, #4f46e5);
+    color: white;
+    border: none;
+    padding: 0.65rem 2rem;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: all 0.2s;
+    white-space: nowrap;
+}
+
+.btn-consultar:hover:not(:disabled) {
+    background: linear-gradient(135deg, #4f46e5, #4338ca);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+}
+
+.btn-consultar:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Empty State */
+.empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.empty-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+}
+
+.empty-state h3 {
+    color: #374151;
+    margin: 0 0 0.5rem 0;
+}
+
+.empty-state p {
+    color: #9ca3af;
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+/* Summary Cards */
+.summary-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.summary-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.25rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    transition: transform 0.2s;
+}
+
+.summary-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.card-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.5rem;
+}
+
+.card-value {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #111827;
+}
+
+.card-value.period {
+    text-transform: capitalize;
+    color: #4f46e5;
+}
+
+.card-value.blue {
+    color: #2563eb;
+}
+
+.card-value.green {
+    color: #10b981;
+}
+
+.card-value.red {
+    color: #ef4444;
+}
+
+.card-value.neto {
+    color: #059669;
+    font-size: 1.4rem;
+}
+
+/* Table */
+.table-container {
+    background-color: white;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    overflow-x: auto;
+    padding-bottom: 1rem;
+}
+
+.historial-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+    min-width: 1200px;
+}
+
+.historial-table th {
+    background-color: #f9fafb;
+    color: #374151;
+    font-weight: 600;
+    text-align: center;
+    padding: 0.75rem 0.5rem;
+    border-bottom: 2px solid #e5e7eb;
+    text-transform: uppercase;
+    font-size: 0.7rem;
+    letter-spacing: 0.05em;
+}
+
+.historial-table td {
+    padding: 0.6rem 0.5rem;
+    border-bottom: 1px solid #f3f4f6;
+    color: #374151;
+    text-align: center;
+    vertical-align: middle;
+}
+
+.historial-table tr:hover {
+    background-color: #f8fafc;
+}
+
+.text-right {
+    text-align: right !important;
+}
+
+.badge {
+    padding: 0.2rem 0.6rem;
+    border-radius: 9999px;
+    font-size: 0.7rem;
+    font-weight: 500;
+    background-color: #f3f4f6;
+}
+
+.type-badge {
+    background-color: #dbeafe;
+    color: #1e40af;
+}
+
+.neto-cell {
+    font-weight: 700;
+    color: #059669;
+    font-size: 0.95rem;
+}
+
+.totals-row {
+    background-color: #f9fafb;
+    border-top: 2px solid #e5e7eb;
+}
+
+.totals-row td {
+    padding: 1rem 0.5rem;
+}

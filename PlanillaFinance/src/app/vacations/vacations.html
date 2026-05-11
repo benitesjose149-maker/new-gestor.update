@@ -1,0 +1,133 @@
+<div class="vacations-container">
+    <header class="page-header">
+        <div>
+            <h1>Gestión de Vacaciones</h1>
+            <p class="subtitle">Solo personal en Planilla</p>
+        </div>
+        <button class="btn-primary" (click)="abrirModal()">
+            <span class="icon">+</span> Registrar Vacaciones
+        </button>
+    </header>
+
+    <div class="stats-grid">
+        <div class="stat-card">
+            <span class="stat-label">Total en Planilla</span>
+            <span class="stat-value">{{employees.length}}</span>
+        </div>
+        <div class="stat-card">
+            <span class="stat-label">Días Consumidos (Mes)</span>
+            <span class="stat-value text-blue">{{consumedDaysMonth}}</span>
+        </div>
+        <div class="stat-card">
+            <span class="stat-label">Vacaciones Programadas</span>
+            <span class="stat-value text-orange">{{scheduledCount}}</span>
+        </div>
+    </div>
+
+    <div class="table-container card-glass">
+        <table class="vacations-table">
+            <thead>
+                <tr>
+                    <th>Empleado</th>
+                    <th>Periodo</th>
+                    <th>Días Útiles</th>
+                    <th>Estado</th>
+                    <th>Observaciones</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let vac of vacations">
+                    <td>
+                        <div class="emp-info">
+                            <span class="emp-name">{{vac.NOMBRE}} {{vac.APELLIDOS}}</span>
+                            <span class="emp-id">#{{vac.ID_EMPLOYEE}}</span>
+                        </div>
+                    </td>
+                    <td class="period-cell">
+                        <strong>{{vac.FECHA_INICIO | date:'dd/MM/yyyy':'UTC'}}</strong> - 
+                        <strong>{{vac.FECHA_FIN | date:'dd/MM/yyyy':'UTC'}}</strong>
+                    </td>
+                    <td class="text-center"><strong>{{vac.DIAS_UTILES}}</strong></td>
+                    <td>
+                        <span class="badge" [ngClass]="getDisplayStatus(vac).toLowerCase()">
+                            {{getDisplayStatus(vac)}}
+                        </span>
+                    </td>
+                    <td><span class="obs-text">{{vac.OBSERVACIONES || '-'}}</span></td>
+                    <td class="actions-cell">
+                        <button class="btn-icon edit" (click)="abrirModal(vac)" title="Editar">✏️</button>
+                        <button class="btn-icon delete" (click)="vac.ID && eliminarVacacion(vac.ID)"
+                            title="Eliminar">🗑️</button>
+                    </td>
+                </tr>
+                <tr *ngIf="vacations.length === 0 && !loading">
+                    <td colspan="6" class="empty-state">No hay registros de vacaciones.</td>
+                </tr>
+                <tr *ngIf="loading">
+                    <td colspan="6" class="empty-state">Cargando...</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Modal Form -->
+<div class="modal-overlay" *ngIf="showModal" (click)="cerrarModal()">
+    <div class="modal-content card-glass" (click)="$event.stopPropagation()">
+        <header class="modal-header">
+            <h2>{{isEditing ? 'Editar' : 'Registrar'}} Vacaciones</h2>
+            <button class="close-btn" (click)="cerrarModal()">&times;</button>
+        </header>
+
+        <form class="modal-body" (submit)="$event.preventDefault(); guardarVacacion()">
+            <div class="form-group">
+                <label>Empleado (Planilla)</label>
+                <select [(ngModel)]="currentVacation.idEmployee" name="idEmployee" class="form-control" required>
+                    <option [ngValue]="null">Seleccione un empleado...</option>
+                    <option *ngFor="let emp of employees" [ngValue]="emp.id">
+                        {{emp.nombre}} {{emp.apellidos}}
+                    </option>
+                </select>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Fecha Inicio</label>
+                    <input type="date" [(ngModel)]="currentVacation.fechaInicio" name="fechaInicio" class="form-control"
+                        (ngModelChange)="calcularDiasUtiles()" required>
+                </div>
+                <div class="form-group">
+                    <label>Fecha Fin</label>
+                    <input type="date" [(ngModel)]="currentVacation.fechaFin" name="fechaFin" class="form-control"
+                        (ngModelChange)="calcularDiasUtiles()" required>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Días Útiles</label>
+                    <input type="number" [(ngModel)]="currentVacation.diasUtiles" name="diasUtiles" class="form-control"
+                        required>
+                </div>
+                <div class="form-group">
+                    <label>Estado</label>
+                    <select [(ngModel)]="currentVacation.estado" name="estado" class="form-control">
+                        <option *ngFor="let st of estados" [value]="st">{{st}}</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Observaciones</label>
+                <textarea [(ngModel)]="currentVacation.observaciones" name="observaciones" class="form-control"
+                    rows="3"></textarea>
+            </div>
+
+            <footer class="modal-footer">
+                <button type="button" class="btn-secondary" (click)="cerrarModal()">Cancelar</button>
+                <button type="submit" class="btn-primary">Guardar Registro</button>
+            </footer>
+        </form>
+    </div>
+</div>

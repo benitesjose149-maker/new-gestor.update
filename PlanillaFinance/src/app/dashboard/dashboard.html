@@ -1,0 +1,113 @@
+<div class="stats-grid">
+    <div class="stat-card" *ngFor="let stat of stats" [ngClass]="stat.color">
+        <div class="stat-icon">{{ stat.icon }}</div>
+        <div class="stat-info">
+            <h3>{{ stat.title }}</h3>
+            <p class="value">{{ stat.value }}</p>
+            <span class="change">{{ stat.change }}</span>
+        </div>
+    </div>
+</div>
+<div class="dashboard-widgets">
+    <div class="widget">
+        <div class="widget-header">
+            <h2>🎂 Cumpleaños del Mes</h2>
+        </div>
+        <ul class="activity-list">
+            <li *ngIf="birthdays.length === 0" class="no-data">No hay cumpleaños este mes</li>
+            <li *ngFor="let birthday of birthdays">
+                <div class="activity-icon birthday"></div>
+                <div class="activity-details">
+                    <span class="activity-title">{{ birthday.name }}</span>
+                    <span class="activity-date">{{ birthday.date }}</span>
+                </div>
+            </li>
+        </ul>
+    </div>
+    <div class="widget">
+        <div class="widget-header">
+            <h2>⚠️ Alertas de Contrato</h2>
+            <span class="badge" *ngIf="contractExpirations.length > 0">{{ contractExpirations.length }}</span>
+        </div>
+        <ul class="activity-list">
+            <li *ngIf="contractExpirations.length === 0" class="no-data">No hay vencimientos próximos</li>
+            <li *ngFor="let contract of contractExpirations">
+                <div class="activity-icon expiry"></div>
+                <div class="activity-details">
+                    <span class="activity-title">{{ contract.name }}</span>
+                    <span class="activity-date">Vence el: <strong>{{ contract.expiryDate }}</strong></span>
+                </div>
+            </li>
+        </ul>
+    </div>
+    <div class="widget">
+        <div class="widget-header">
+            <h2>🧾 Facturas UnPaid (WHMCS)</h2>
+            <span class="badge" *ngIf="unpaidInvoices.length > 0" style="background-color: #fee2e2; color: #b91c1c;">{{
+                unpaidInvoices.length }}</span>
+        </div>
+        <ul class="activity-list">
+            <li *ngIf="unpaidInvoices.length === 0" class="no-data">No hay facturas pendientes</li>
+            <li *ngFor="let inv of unpaidInvoices">
+                <div class="activity-icon"
+                    style="background-color: #fecaca; color: #dc2626; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: bold;">
+                    !
+                </div>
+                <div class="activity-details" style="display: flex; justify-content: space-between; width: 100%;">
+                    <div style="display: flex; flex-direction: column;">
+                        <span class="activity-title">#{{ inv.id }} - {{ inv.cliente }}</span>
+                        <span class="activity-date text-red">Vence: <strong>{{ inv.vencimiento }}</strong></span>
+                    </div>
+                    <div style="font-weight: bold; color: #b91c1c;">
+                        S/ {{ inv.monto | number:'1.2-2' }}
+                    </div>
+                </div>
+            </li>
+        </ul>
+    </div>
+    <div class="widget" style="border-left: 4px solid #f59e0b;">
+        <div class="widget-header"
+            style="background: linear-gradient(135deg, #fffbeb, #fef3c7); border-radius: 8px 8px 0 0; padding: 0.75rem 1rem;">
+            <h2 style="color: #92400e;">💳 Caja Virtual - Pendientes</h2>
+            <span class="badge" style="background-color: #fde68a; color: #92400e; font-weight: 700;">{{
+                pendingCajaVirtual.length }}</span>
+        </div>
+        <div
+            style="background: #fffbeb; padding: 0.6rem 1rem; border-bottom: 1px solid #fde68a; display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-size: 0.8rem; color: #92400e;">
+                ⚠️ <strong>{{ pendingCajaVirtual.length }}</strong> factura(s) pendientes
+            </span>
+            <span style="font-size: 1rem; font-weight: 700; color: #b45309;">
+                Total: S/ {{ totalPendingCaja | number:'1.2-2' }}
+            </span>
+        </div>
+        <div style="max-height: 400px; overflow-y: auto;">
+            <ul class="activity-list">
+                <li *ngIf="pendingCajaVirtual.length === 0" class="no-data" style="padding: 2rem; color: #92400e;">
+                    No hay pagos pendientes de liquidar en Caja Virtual
+                </li>
+                <li *ngFor="let inv of pendingCajaVirtual" (click)="goToFinance(inv.id)"
+                    style="border-bottom: 1px solid #fde68a; padding-bottom: 0.6rem; margin-bottom: 0.4rem; cursor: pointer;"
+                    onmouseover="this.style.backgroundColor='#fef3c7'"
+                    onmouseout="this.style.backgroundColor='transparent'">
+                    <div class="activity-icon"
+                        style="background-color: #fde68a; color: #92400e; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: bold; min-width: 32px; min-height: 32px; border-radius: 8px;">
+                        💳
+                    </div>
+                    <div class="activity-details"
+                        style="display: flex; justify-content: space-between; width: 100%; align-items: center;">
+                        <div style="display: flex; flex-direction: column; gap: 2px;">
+                            <span class="activity-title" style="font-size: 0.82rem;">#{{ inv.id }} - {{ inv.cliente
+                                }}</span>
+                            <span class="activity-date" style="color: #b45309; font-size: 0.75rem;">{{ inv.fecha }} · {{
+                                inv.cuentaDebito }}</span>
+                        </div>
+                        <div style="font-weight: 700; color: #b45309; white-space: nowrap; margin-left: 0.5rem;">
+                            S/ {{ inv.monto | number:'1.2-2' }}
+                        </div>
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
