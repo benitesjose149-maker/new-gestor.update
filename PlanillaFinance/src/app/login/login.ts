@@ -2,7 +2,7 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { API_URL } from '../api-config';
 import { AuthService } from '../auth/auth.service';
 
@@ -21,10 +21,12 @@ export class LoginComponent {
     constructor(
         private fb: FormBuilder,
         private router: Router,
+        private route: ActivatedRoute,
         private authService: AuthService
     ) {
         if (this.authService.isLoggedIn()) {
-            this.router.navigate(['/dashboard']);
+            const returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/dashboard';
+            this.router.navigateByUrl(returnUrl);
         }
 
         this.loginForm = this.fb.group({
@@ -81,7 +83,8 @@ export class LoginComponent {
                     }
 
                     this.authService.login(data.user);
-                    this.router.navigate(['/dashboard']);
+                    const returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/dashboard';
+                    this.router.navigateByUrl(returnUrl);
                 } else {
                     this.errorMessage = data.message || 'Credenciales inválidas.';
                 }

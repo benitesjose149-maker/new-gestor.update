@@ -2,7 +2,7 @@
   "name": "Gestor HWPeru",
   "short_name": "HWPeru",
   "description": "Sistema de Gestion de Planilla y Finanzas - HWPeru",
-  "start_url": "/",
+  "start_url": "/finance",
   "display": "standalone",
   "background_color": "#f4f6f8",
   "theme_color": "#0f172a",

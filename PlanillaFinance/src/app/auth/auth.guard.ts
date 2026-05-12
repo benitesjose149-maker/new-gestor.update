@@ -11,7 +11,7 @@ export const authGuard: CanActivateFn = (route, state) => {
     return true;
   }
 
-  // Redirect to login page and replace the URL in history to avoid back loops
-  router.navigate(['/login'], { replaceUrl: true });
+  // Redirect to login page and pass the requested URL
+  router.navigate(['/login'], { queryParams: { returnUrl: state.url }, replaceUrl: true });
   return false;
 };
