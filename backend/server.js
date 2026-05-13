@@ -2972,8 +2972,8 @@ app.get('/api/zkteco/check-user/:pin', (req, res) => {
     const pin = req.params.pin;
     console.log(`[ZKTeco] Verificando existencia de PIN: ${pin}`);
     
-    // Buscar en la caché (biometricUsersFullDataCache)
-    const exists = biometricUsersFullDataCache.has(pin);
+    // Buscar en la caché (biometricUsersCache)
+    const exists = biometricUsersCache.has(pin);
     
     res.json({
         pin,
