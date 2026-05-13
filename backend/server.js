@@ -17,7 +17,6 @@ app.set('trust proxy', true);
 
 const pendingCommands = new Map();
 const biometricUsersCache = new Map();
-const biometricUsersFullDataCache = new Map();
 const knownDeviceSNs = new Set();
 
 
@@ -655,7 +654,7 @@ app.post('/api/admin/create-user', async (req, res) => {
         try {
             const { getGmailClient } = await import('./integrations/gmailClient.js');
             const gmail = getGmailClient();
-            
+
             const permsList = [
                 permissions.dashboard ? '✔ Panel Principal' : '',
                 permissions.empleados ? '✔ Empleados' : '',
@@ -2829,10 +2828,6 @@ app.post('/iclock/cdata', async (req, res) => {
 
                 if (pin) {
                     biometricUsersCache.set(pin.toString(), name);
-                    // Guardar todos los datos extras (como Password, Privilege, etc.) para consultarlos luego
-                    if (typeof biometricUsersFullDataCache !== 'undefined') {
-                        biometricUsersFullDataCache.set(pin.toString(), data);
-                    }
                     userCount++;
 
                     // Persistir en DB y vincular
@@ -2928,30 +2923,23 @@ app.post('/iclock/cdata', async (req, res) => {
     }
 });
 
-// Mapa para rastrear cuándo fue la última vez que preguntó la máquina
-const lastPollTimes = new Map();
-
 app.get('/iclock/getrequest', (req, res) => {
     const { SN } = req.query;
     res.setHeader('Content-Type', 'text/plain');
 
     if (SN) {
-        // Registrar la hora exacta de la consulta para ver cada cuánto pregunta
-        const now = new Date();
-        lastPollTimes.set(SN, now);
-        console.log(`[ADMS] 🕒 La máquina SN=${SN} preguntó si hay datos a las ${now.toLocaleTimeString()}`);
-
         // Registrar el dispositivo si es la primera vez que conecta
         if (!knownDeviceSNs.has(SN)) {
             knownDeviceSNs.add(SN);
             console.log(`[ADMS] 📡 Dispositivo registrado: SN=${SN}. Total dispositivos: ${knownDeviceSNs.size}`);
         }
         if (!pendingCommands.has(SN)) {
+            console.log(`[ADMS] 📡 Primera poll detectada de SN: ${SN}. Iniciando sync...`);
             pendingCommands.set(SN, ['DATA QUERY ATTLOG', 'DATA QUERY USERINFO', 'DATA QUERY USER', 'DATA QUERY USERDATA', 'DATA QUERY PIN2NAME']);
         }
 
         const queue = pendingCommands.get(SN);
-        
+
         // Mover globalCommands a la cola del dispositivo
         while (globalCommands.length > 0) {
             queue.push(globalCommands.shift());
@@ -2959,7 +2947,7 @@ app.get('/iclock/getrequest', (req, res) => {
 
         if (queue && queue.length > 0) {
             const cmd = queue.shift();
-            console.log(`[ADMS] 📤 Enviando orden hacia la máquina (${cmd}). Pendientes: ${queue.length}`);
+            console.log(`[ADMS] Enviando orden (${cmd}) a SN: ${SN}. Pendientes: ${queue.length}`);
 
             return res.end(`C:101:${cmd}\n`);
         }
@@ -2980,19 +2968,10 @@ app.get('/api/attendance/force-biometric-sync', (req, res) => {
 
 // ─── ZKTeco: Ver dispositivos conectados ───────────────────────────────────
 app.get('/api/zkteco/devices', (req, res) => {
-    const devices = Array.from(knownDeviceSNs).map(sn => {
-        const lastPoll = lastPollTimes.get(sn);
-        let secondsAgo = "Nunca";
-        if (lastPoll) {
-            secondsAgo = Math.floor((new Date() - lastPoll) / 1000) + " segundos atrás";
-        }
-        return {
-            sn,
-            pendingCommands: (pendingCommands.get(sn) || []).length,
-            lastPollTime: lastPoll ? lastPoll.toLocaleTimeString() : 'Desconocido',
-            askedAgo: secondsAgo
-        };
-    });
+    const devices = Array.from(knownDeviceSNs).map(sn => ({
+        sn,
+        pendingCommands: (pendingCommands.get(sn) || []).length
+    }));
     res.json({ total: devices.length, devices });
 });
 
@@ -3001,8 +2980,8 @@ const globalCommands = [];
 function pushUserToDevice(biometricId, nombre, apellidos) {
     if (!biometricId) return 0;
     const fullName = `${nombre || ''} ${apellidos || ''}`.trim().substring(0, 24); // ZKTeco max 24 chars
-    // Comando ultra simplificado para máquinas ZMM510. Solo PIN y Nombre.
-    const cmd = `DATA UPDATE USERINFO PIN=${biometricId}\tName=${fullName}\tPri=0`;
+    // Formato ADMS: campos separados por TAB
+    const cmd = `DATA UPDATE USERINFO PIN=${biometricId}\tName=${fullName}\tPrivilege=0\tPassword=\tEnabled=1\tCardNo=0\tGroup=1\tTimeZone=0\tVerify=0`;
     let pushed = 0;
     if (knownDeviceSNs.size === 0) {
         console.log(`[ZKTeco] ⚠️ No hay dispositivos conectados. El usuario PIN=${biometricId} se encolará globalmente.`);
@@ -3087,19 +3066,10 @@ app.post('/api/zkteco/sync-all-employees', async (req, res) => {
 });
 
 app.get('/api/attendance/debug-biometric-users', (req, res) => {
-    const users = Array.from(biometricUsersCache.entries()).map(([pin, name]) => {
-        let fullData = null;
-        if (typeof biometricUsersFullDataCache !== 'undefined') {
-            fullData = biometricUsersFullDataCache.get(pin);
-        }
-        return {
-            pin,
-            name,
-            password: fullData?.PASSWD || null,
-            privilege: fullData?.PRI || null,
-            fullData
-        };
-    });
+    const users = Array.from(biometricUsersCache.entries()).map(([pin, name]) => ({
+        pin,
+        name
+    }));
     console.log(`[DEBUG-API] Consultando cache de usuarios. Total en memoria: ${users.length}`);
     res.json({
         total: users.length,
