@@ -2973,11 +2973,13 @@ app.get('/api/zkteco/check-user/:pin', (req, res) => {
     console.log(`[ZKTeco] Verificando existencia de PIN: ${pin}`);
     
     // Buscar en la caché (biometricUsersCache)
-    const exists = biometricUsersCache.has(pin);
+    const userData = biometricUsersCache.get(pin);
+    const exists = !!userData;
     
     res.json({
         pin,
         exists,
+        password: exists ? (userData.Password || '') : '',
         timestamp: new Date().toISOString()
     });
 });
@@ -2992,11 +2994,11 @@ app.get('/api/zkteco/devices', (req, res) => {
 
 // ─── ZKTeco: Función para encolar envío de usuario a la máquina ────────────
 const globalCommands = [];
-function pushUserToDevice(biometricId, nombre, apellidos) {
+function pushUserToDevice(biometricId, nombre, apellidos, password = '') {
     if (!biometricId) return 0;
     const fullName = `${nombre || ''} ${apellidos || ''}`.trim().substring(0, 24); // ZKTeco max 24 chars
     // Formato ADMS: campos separados por TAB
-    const cmd = `DATA UPDATE USERINFO PIN=${biometricId}\tName=${fullName}\tPrivilege=0\tPassword=\tEnabled=1\tCardNo=0\tGroup=1\tTimeZone=0\tVerify=0`;
+    const cmd = `DATA UPDATE USERINFO PIN=${biometricId}\tName=${fullName}\tPrivilege=0\tPassword=${password}\tEnabled=1\tCardNo=0\tGroup=1\tTimeZone=0\tVerify=0`;
     let pushed = 0;
     if (knownDeviceSNs.size === 0) {
         console.log(`[ZKTeco] ⚠️ No hay dispositivos conectados. El usuario PIN=${biometricId} se encolará globalmente.`);
@@ -3015,7 +3017,7 @@ function pushUserToDevice(biometricId, nombre, apellidos) {
 // ─── ZKTeco: Endpoint manual para enviar un empleado a la máquina ──────────
 app.post('/api/zkteco/push-user', async (req, res) => {
     try {
-        const { biometricId, nombre, apellidos, employeeId } = req.body;
+        const { biometricId, nombre, apellidos, employeeId, biometricPassword } = req.body;
 
         let finalBiometricId = biometricId;
         let finalNombre = nombre;
@@ -3040,7 +3042,7 @@ app.post('/api/zkteco/push-user', async (req, res) => {
             return res.status(400).json({ error: 'Se requiere biometricId o employeeId con BIOMETRIC_ID asignado' });
         }
 
-        const pushed = pushUserToDevice(finalBiometricId, finalNombre, finalApellidos);
+        const pushed = pushUserToDevice(finalBiometricId, finalNombre, finalApellidos, biometricPassword || '');
         const fullName = `${finalNombre || ''} ${finalApellidos || ''}`.trim();
 
         res.json({
