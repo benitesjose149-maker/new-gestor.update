@@ -2923,18 +2923,25 @@ app.post('/iclock/cdata', async (req, res) => {
     }
 });
 
+// Mapa para rastrear cuándo fue la última vez que preguntó la máquina
+const lastPollTimes = new Map();
+
 app.get('/iclock/getrequest', (req, res) => {
     const { SN } = req.query;
     res.setHeader('Content-Type', 'text/plain');
 
     if (SN) {
+        // Registrar la hora exacta de la consulta para ver cada cuánto pregunta
+        const now = new Date();
+        lastPollTimes.set(SN, now);
+        console.log(`[ADMS] 🕒 La máquina SN=${SN} preguntó si hay datos a las ${now.toLocaleTimeString()}`);
+
         // Registrar el dispositivo si es la primera vez que conecta
         if (!knownDeviceSNs.has(SN)) {
             knownDeviceSNs.add(SN);
             console.log(`[ADMS] 📡 Dispositivo registrado: SN=${SN}. Total dispositivos: ${knownDeviceSNs.size}`);
         }
         if (!pendingCommands.has(SN)) {
-            console.log(`[ADMS] 📡 Primera poll detectada de SN: ${SN}. Iniciando sync...`);
             pendingCommands.set(SN, ['DATA QUERY ATTLOG', 'DATA QUERY USERINFO', 'DATA QUERY USER', 'DATA QUERY USERDATA', 'DATA QUERY PIN2NAME']);
         }
 
@@ -2947,7 +2954,7 @@ app.get('/iclock/getrequest', (req, res) => {
 
         if (queue && queue.length > 0) {
             const cmd = queue.shift();
-            console.log(`[ADMS] Enviando orden (${cmd}) a SN: ${SN}. Pendientes: ${queue.length}`);
+            console.log(`[ADMS] 📤 Enviando orden hacia la máquina (${cmd}). Pendientes: ${queue.length}`);
 
             return res.end(`C:101:${cmd}\n`);
         }
@@ -2968,10 +2975,19 @@ app.get('/api/attendance/force-biometric-sync', (req, res) => {
 
 // ─── ZKTeco: Ver dispositivos conectados ───────────────────────────────────
 app.get('/api/zkteco/devices', (req, res) => {
-    const devices = Array.from(knownDeviceSNs).map(sn => ({
-        sn,
-        pendingCommands: (pendingCommands.get(sn) || []).length
-    }));
+    const devices = Array.from(knownDeviceSNs).map(sn => {
+        const lastPoll = lastPollTimes.get(sn);
+        let secondsAgo = "Nunca";
+        if (lastPoll) {
+            secondsAgo = Math.floor((new Date() - lastPoll) / 1000) + " segundos atrás";
+        }
+        return {
+            sn,
+            pendingCommands: (pendingCommands.get(sn) || []).length,
+            lastPollTime: lastPoll ? lastPoll.toLocaleTimeString() : 'Desconocido',
+            askedAgo: secondsAgo
+        };
+    });
     res.json({ total: devices.length, devices });
 });
 
