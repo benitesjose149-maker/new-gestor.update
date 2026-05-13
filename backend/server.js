@@ -2969,7 +2969,7 @@ app.get('/api/attendance/force-biometric-sync', (req, res) => {
 // ─── ZKTeco: Ver dispositivos conectados ───────────────────────────────────
 // ─── ZKTeco: Verificar si un usuario existe en la caché ───────────────
 app.get('/api/zkteco/check-user/:pin', (req, res) => {
-    const pin = req.params.pin;
+    const pin = req.params.pin.toString();
     console.log(`[ZKTeco] Verificando existencia de PIN: ${pin}`);
     
     // Buscar en la caché (biometricUsersCache)
