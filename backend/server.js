@@ -2817,9 +2817,11 @@ app.post('/iclock/cdata', async (req, res) => {
 
                 const data = {};
                 cleanLine.split('\t').forEach(p => {
-                    const [keyVal, ...rest] = p.split('=');
-                    if (keyVal && rest.length > 0) {
-                        data[keyVal.trim().toUpperCase()] = rest.join('=').trim();
+                    const parts = p.split('=');
+                    if (parts.length >= 2) {
+                        const key = parts[0].trim().toUpperCase();
+                        const val = parts.slice(1).join('=').trim();
+                        data[key] = val;
                     }
                 });
 
