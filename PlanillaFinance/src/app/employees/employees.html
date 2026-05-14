@@ -257,6 +257,11 @@
                                 (input)="checkBiometricRegistration()">
                         </div>
                         <div class="form-group">
+                            <label>Contraseña Máquina (PIN)</label>
+                            <input type="text" [(ngModel)]="newEmployee.biometricPassword" name="biometricPassword"
+                                [disabled]="isViewOnly" class="form-control" placeholder="6 dígitos" maxlength="6">
+                        </div>
+                        <div class="form-group">
                             <label>Hora Entrada (Puntualidad)</label>
                             <input type="time" [(ngModel)]="newEmployee.entryTime" name="entryTime"
                                 [disabled]="isViewOnly" class="form-control">
@@ -270,11 +275,11 @@
                     <div class="form-group-checkbox mt-2" *ngIf="!isViewOnly">
                         <input type="checkbox" [(ngModel)]="newEmployee.syncToBiometric" name="syncToBiometric"
                             id="syncBio" [disabled]="isBiometricRegistered">
-                        <label for="syncBio" 
-                               [style.color]="isBiometricRegistered ? '#10b981' : '#2563eb'" 
-                               [style.font-weight]="'bold'" 
-                               [style.cursor]="isBiometricRegistered ? 'not-allowed' : 'pointer'">
-                            <i class="fa-solid fa-fingerprint"></i> 
+                        <label for="syncBio" [style.color]="isBiometricRegistered ? '#10b981' : '#2563eb'"
+                            [style.font-weight]="'bold'"
+                            [style.cursor]="isBiometricRegistered ? 'not-allowed' : 'pointer'"
+                            [style.opacity]="isBiometricRegistered ? '0.7' : '1'">
+                            <i class="fa-solid fa-fingerprint"></i>
                             {{ biometricStatus || '¿Registrar/Actualizar en Equipo Biométrico ahora?' }}
                         </label>
                     </div>

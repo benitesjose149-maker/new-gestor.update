@@ -49,6 +49,7 @@ interface EmployeeFormData {
     nivelEducativo: string;
     estado: string;
     biometricId?: number;
+    biometricPassword?: string;
     entryTime?: string;
     exitTime?: string;
     syncToBiometric?: boolean;
@@ -83,7 +84,7 @@ export class GestionEmpleadosComponent {
         calculoAfpMinimo: false,
         fechaInicio: new Date().toISOString().split('T')[0], fechaFinContrato: '', tipoContrato: '', horarioTrabajo: '',
         banco: '', tipoCuenta: '', numeroCuenta: '', cci: '', nivelEducativo: '', estado: 'Activo',
-        biometricId: undefined, entryTime: '', exitTime: '', syncToBiometric: false,
+        biometricId: undefined, biometricPassword: '', entryTime: '', exitTime: '', syncToBiometric: false,
     };
 
     cargos: string[] = ['Técnico', 'Administrador', 'Vendedor', 'Gerente', 'Recepcionista', 'Programador', 'Administrativo', 'Ventas', 'Gerencia', 'Soporte Técnico', 'Diseño', 'Marketing'];
@@ -142,6 +143,7 @@ export class GestionEmpleadosComponent {
                     this.biometricStatus = '✅ Usuario ya registrado en equipo';
                     this.isBiometricRegistered = true;
                     this.newEmployee.syncToBiometric = false;
+                    this.newEmployee.biometricPassword = data.password || ''; // Auto-llenar PIN
                 } else {
                     console.log('Usuario NO encontrado en equipo. Habilitando UI.');
                     this.biometricStatus = '⚠️ No registrado en equipo';
