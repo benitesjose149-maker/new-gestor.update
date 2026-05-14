@@ -2827,7 +2827,11 @@ app.post('/iclock/cdata', async (req, res) => {
                 const name = data.NAME || `Usuario sin nombre (ID: ${pin})`;
 
                 if (pin) {
-                    biometricUsersCache.set(pin.toString(), name);
+                    // Guardar el objeto de datos completo en la caché, no solo el nombre
+                    const existingData = biometricUsersCache.get(pin.toString()) || {};
+                    const mergedData = { ...existingData, ...data, NAME: name };
+                    
+                    biometricUsersCache.set(pin.toString(), mergedData);
                     userCount++;
 
                     // Persistir en DB y vincular
