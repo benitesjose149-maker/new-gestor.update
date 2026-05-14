@@ -2978,6 +2978,19 @@ app.get('/api/zkteco/check-user/:pin', (req, res) => {
     // Buscar contraseña en diferentes posibles nombres de campo
     const pinPassword = exists ? (userData.Password || userData.password || userData.Passwd || '') : '';
 
+    // Si el usuario existe pero no tenemos contraseña, pedir a la máquina que nos mande los datos de nuevo
+    if (exists && !pinPassword && knownDeviceSNs.size > 0) {
+        console.log(`[ZKTeco] Usuario ${pin} existe pero sin clave. Encolando petición de datos a las máquinas...`);
+        const queryCmd = `DATA QUERY USERINFO PIN=${pin}`;
+        const queryCmdAlt = `DATA QUERY USER PIN=${pin}`;
+        
+        for (const sn of knownDeviceSNs) {
+            if (!pendingCommands.has(sn)) pendingCommands.set(sn, []);
+            pendingCommands.get(sn).push(queryCmd);
+            pendingCommands.get(sn).push(queryCmdAlt);
+        }
+    }
+
     res.json({
         pin,
         exists,
