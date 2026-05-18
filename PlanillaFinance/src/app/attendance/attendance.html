@@ -157,8 +157,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr *ngFor="let record of selectedEmployeeHistory"
-                            [class.row-non-working]="record.isNonWorking"
+                        <tr *ngFor="let record of selectedEmployeeHistory" [class.row-non-working]="record.isNonWorking"
                             [class.row-absent]="record.status === 'Falta' && !record.isNonWorking">
                             <td class="date-col">
                                 <strong>{{ record.date | date:'dd MMM':'UTC' }}</strong>
@@ -178,24 +177,28 @@
                             </td>
                             <td class="observation-cell">
                                 <!-- Modo lectura -->
-                                <div *ngIf="editingObservationRecord !== record" style="display: flex; align-items: center; gap: 0.5rem;">
-                                    <span *ngIf="record.observations" style="font-size: 0.8rem; color: #64748b;">{{ record.observations }}</span>
-                                    <button *ngIf="record.status === 'Falta' && !record.isNonWorking"
-                                        class="action-btn text-warning" style="font-size: 0.75rem; padding: 0.25rem 0.5rem;"
-                                        title="Agregar/Editar Observación"
-                                        (click)="startEditObservation(record)">
-                                        <i class="fas fa-edit"></i>
+                                <div *ngIf="editingObservationRecord !== record"
+                                    style="display: flex; align-items: center; gap: 0.5rem;">
+                                    <span *ngIf="record.observations" style="font-size: 0.8rem; color: #64748b;">{{
+                                        record.observations }}</span>
+                                    <button *ngIf="(record.status === 'Falta' || record.status === 'FALTA' || record.isMissingRecord) && !record.isNonWorking"
+                                        class="action-btn text-warning"
+                                        style="font-size: 0.75rem; padding: 0.25rem 0.5rem; border: 1px solid #fcd34d; background: #fffbeb; border-radius: 4px; cursor: pointer; color: #d97706; display: flex; align-items: center; gap: 4px;"
+                                        title="Agregar/Editar Observación" (click)="startEditObservation(record)">
+                                        <i class="fa-solid fa-pen-to-square"></i> Editar
                                     </button>
                                 </div>
                                 <!-- Modo edición -->
-                                <div *ngIf="editingObservationRecord === record" style="display: flex; flex-direction: column; gap: 0.4rem;">
+                                <div *ngIf="editingObservationRecord === record"
+                                    style="display: flex; flex-direction: column; gap: 0.4rem;">
                                     <input type="text" [(ngModel)]="inlineObservationText"
                                         placeholder="Ej: Permiso médico, Vacaciones..."
                                         style="padding: 0.4rem 0.6rem; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.8rem; width: 100%;">
                                     <div style="display: flex; gap: 0.3rem;">
-                                        <button class="btn-submit" style="font-size: 0.7rem; padding: 0.25rem 0.6rem; background: #10b981;"
+                                        <button class="btn-submit"
+                                            style="font-size: 0.7rem; padding: 0.25rem 0.6rem; background: #10b981;"
                                             (click)="saveInlineObservation(record)">
-                                            <i class="fas fa-check"></i> Guardar
+                                            <i class="fa-solid fa-check"></i> Guardar
                                         </button>
                                         <button class="btn-cancel" style="font-size: 0.7rem; padding: 0.25rem 0.6rem;"
                                             (click)="cancelEditObservation()">
