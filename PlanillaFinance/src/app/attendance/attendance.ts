@@ -223,6 +223,10 @@ export class AttendanceComponent implements OnInit {
         return `${hours}h ${minutes}m`;
     }
 
+    // Variables para observación inline en el historial
+    editingObservationRecord: any = null;
+    inlineObservationText: string = '';
+
     async openEmployeeModal(emp: any) {
         this.selectedEmployee = emp;
         this.selectedEmployeeHistory = [];
@@ -230,33 +234,128 @@ export class AttendanceComponent implements OnInit {
 
         try {
             const res = await fetch(`${API_URL}/api/attendance/history/${emp.id}`, { headers: getAuthHeaders() });
+            let serverHistory: any[] = [];
             if (res.ok) {
-                const allHistory = await res.json();
-
-                const now = new Date();
-                const currentMonth = now.getMonth();
-                const currentYear = now.getFullYear();
-
-                this.selectedEmployeeHistory = allHistory.filter((record: any) => {
-                    const recDate = new Date(record.date);
-                    return recDate.getMonth() === currentMonth && recDate.getFullYear() === currentYear;
-                }).map((record: any) => {
-                    if (record.clockIn && record.clockIn !== '-- : --' && record.clockOut && record.clockOut !== '-- : --') {
-                        try {
-                            const inMin = this.convertToMinutes(record.clockIn);
-                            const outMin = this.convertToMinutes(record.clockOut);
-
-                            if (outMin - inMin <= 5) {
-                                record.clockOut = '-- : --';
-                                record.totalHours = '0h';
-                            }
-                        } catch (e) { }
-                    }
-                    return record;
-                });
+                serverHistory = await res.json();
             }
+
+            const now = new Date();
+            const currentMonth = now.getMonth();
+            const currentYear = now.getFullYear();
+            const todayDate = now.getDate();
+
+            // Filtrar registros del mes actual (extraer mes/año del string ISO directamente)
+            const monthRecords = serverHistory.filter((record: any) => {
+                const dateStr = typeof record.date === 'string' ? record.date.split('T')[0] : '';
+                const [year, month] = dateStr.split('-').map(Number);
+                return month === (currentMonth + 1) && year === currentYear;
+            }).map((record: any) => {
+                if (record.clockIn && record.clockIn !== '-- : --' && record.clockOut && record.clockOut !== '-- : --') {
+                    try {
+                        const inMin = this.convertToMinutes(record.clockIn);
+                        const outMin = this.convertToMinutes(record.clockOut);
+                        if (outMin - inMin <= 5) {
+                            record.clockOut = '-- : --';
+                            record.totalHours = '0h';
+                        }
+                    } catch (e) { }
+                }
+                return record;
+            });
+
+            // Crear mapa de registros existentes por fecha (YYYY-MM-DD)
+            // IMPORTANTE: Extraer fecha del string ISO directamente, NO usar new Date()
+            // porque "2026-05-11T00:00:00.000Z" en UTC-5 se convierte en Mayo 10 (un día antes)
+            const existingMap = new Map<string, any>();
+            monthRecords.forEach((r: any) => {
+                const key = typeof r.date === 'string' ? r.date.split('T')[0] : new Date(r.date).toISOString().split('T')[0];
+                existingMap.set(key, r);
+            });
+
+            // Generar solo días LABORALES (Lunes a Viernes) del mes hasta hoy
+            const allDays: any[] = [];
+            for (let day = 1; day <= todayDate; day++) {
+                const dateObj = new Date(currentYear, currentMonth, day);
+                const dayOfWeek = dateObj.getDay(); // 0 = Domingo, 6 = Sábado
+
+                // Saltar sábados y domingos completamente
+                if (dayOfWeek === 0 || dayOfWeek === 6) continue;
+
+                const key = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                // Fecha UTC para que Angular date pipe con 'UTC' la muestre correcta
+                const utcDate = `${key}T00:00:00.000Z`;
+
+                if (existingMap.has(key)) {
+                    // Día con registro existente en BD
+                    allDays.push(existingMap.get(key));
+                } else if (day === todayDate) {
+                    // HOY: usar datos en vivo del empleado si tiene entrada
+                    allDays.push({
+                        date: utcDate,
+                        clockIn: emp.clockIn || '-- : --',
+                        clockOut: emp.clockOut || '-- : --',
+                        totalHours: emp.totalHours || '0h',
+                        status: emp.status || 'Falta',
+                        observations: '',
+                        isMissingRecord: emp.status === 'Falta'
+                    });
+                } else {
+                    // Día laboral sin registro = Falta
+                    allDays.push({
+                        date: utcDate,
+                        clockIn: '-- : --',
+                        clockOut: '-- : --',
+                        totalHours: '0h',
+                        status: 'Falta',
+                        observations: '',
+                        isMissingRecord: true
+                    });
+                }
+            }
+
+            // Ordenar de más reciente a más antiguo
+            allDays.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
+            this.selectedEmployeeHistory = allDays;
         } catch (error) {
             console.error('Error al cargar historial:', error);
+        }
+    }
+
+    // Abrir edición de observación inline para una falta
+    startEditObservation(record: any) {
+        this.editingObservationRecord = record;
+        this.inlineObservationText = record.observations || '';
+    }
+
+    cancelEditObservation() {
+        this.editingObservationRecord = null;
+        this.inlineObservationText = '';
+    }
+
+    async saveInlineObservation(record: any) {
+        if (!this.selectedEmployee) return;
+
+        const dateStr = new Date(record.date).toISOString().split('T')[0];
+
+        try {
+            const res = await fetch(`${API_URL}/api/attendance/observation`, {
+                method: 'POST',
+                headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    employeeId: this.selectedEmployee.id,
+                    date: dateStr,
+                    observation: this.inlineObservationText
+                })
+            });
+
+            if (res.ok) {
+                record.observations = this.inlineObservationText;
+                this.editingObservationRecord = null;
+                this.inlineObservationText = '';
+            }
+        } catch (error) {
+            console.error('Error al guardar observación:', error);
         }
     }
 
@@ -264,6 +363,8 @@ export class AttendanceComponent implements OnInit {
         this.isModalOpen = false;
         this.selectedEmployee = null;
         this.selectedEmployeeHistory = [];
+        this.editingObservationRecord = null;
+        this.inlineObservationText = '';
     }
 
     openJustifyModal(emp: any) {

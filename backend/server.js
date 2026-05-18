@@ -10,7 +10,6 @@ import { fileURLToPath } from 'url';
 import http from 'http';
 import dniRoutes from './routes/dniRoutes.js';
 import gmailRoutes from './integrations/gmailRoutes.js';
-// import demoRoutes from './routes/endpoint-demo-test.js';
 
 const app = express();
 app.set('trust proxy', true);

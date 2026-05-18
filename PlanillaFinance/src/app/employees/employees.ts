@@ -134,11 +134,12 @@ export class GestionEmpleadosComponent {
 
             console.log('Respuesta verificación recibida. Status:', response.status);
             
-            if (response.ok) {
-                const data = await response.json();
-                console.log('Datos recibidos de verificación:', data);
-                
-                if (data.exists) {
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log('--- DATOS RECIBIDOS DEL SERVIDOR ---');
+                    console.log(JSON.stringify(data, null, 2));
+                    
+                    if (data.exists) {
                     console.log('USUARIO ENCONTRADO EN EQUIPO. Bloqueando UI.');
                     this.biometricStatus = '✅ Usuario ya registrado en equipo';
                     this.isBiometricRegistered = true;

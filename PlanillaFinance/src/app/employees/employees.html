@@ -259,7 +259,7 @@
                         <div class="form-group">
                             <label>Contraseña Máquina (PIN)</label>
                             <input type="text" [(ngModel)]="newEmployee.biometricPassword" name="biometricPassword"
-                                [disabled]="isViewOnly" class="form-control" placeholder="6 dígitos" maxlength="6">
+                                [disabled]="isViewOnly" class="form-control" placeholder="6 dígitos" maxlength="6" pattern="\d*">
                         </div>
                         <div class="form-group">
                             <label>Hora Entrada (Puntualidad)</label>

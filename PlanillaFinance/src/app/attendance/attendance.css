@@ -447,7 +447,7 @@
     background: white;
     border-radius: 6px;
     width: 90%;
-    max-width: 800px;
+    max-width: 950px;
     max-height: 85vh;
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
     display: flex;
@@ -638,4 +638,28 @@
     width: fit-content;
     margin-top: 4px;
     font-weight: 600;
+}
+
+/* Filas de falta dentro del modal historial (no aplicar opacidad) */
+.nested-table tr.row-absent td {
+    background-color: #fef2f2;
+    opacity: 1;
+    filter: none;
+}
+
+.nested-table tr.row-non-working td {
+    background-color: #f8fafc;
+    opacity: 0.7;
+}
+
+/* Celda de observación en el modal */
+.observation-cell {
+    min-width: 160px;
+    max-width: 220px;
+}
+
+.observation-cell .action-btn {
+    width: auto;
+    height: auto;
+    font-size: 0.8rem;
 }

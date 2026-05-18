@@ -153,14 +153,16 @@
                             <th>Salida</th>
                             <th>Total Horas</th>
                             <th>Estado</th>
+                            <th>Observación</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr *ngFor="let record of selectedEmployeeHistory"
-                            [class.row-non-working]="record.isNonWorking">
+                            [class.row-non-working]="record.isNonWorking"
+                            [class.row-absent]="record.status === 'Falta' && !record.isNonWorking">
                             <td class="date-col">
-                                <strong>{{ record.date | date:'dd MMM' }}</strong>
-                                <small>{{ record.date | date:'EEEE' }}</small>
+                                <strong>{{ record.date | date:'dd MMM':'UTC' }}</strong>
+                                <small>{{ record.date | date:'EEEE':'UTC' }}</small>
                             </td>
                             <td>{{ record.clockIn }}</td>
                             <td>{{ record.clockOut }}</td>
@@ -173,6 +175,34 @@
                                     [class.badge-neutral]="record.isNonWorking">
                                     {{ record.status | uppercase }}
                                 </span>
+                            </td>
+                            <td class="observation-cell">
+                                <!-- Modo lectura -->
+                                <div *ngIf="editingObservationRecord !== record" style="display: flex; align-items: center; gap: 0.5rem;">
+                                    <span *ngIf="record.observations" style="font-size: 0.8rem; color: #64748b;">{{ record.observations }}</span>
+                                    <button *ngIf="record.status === 'Falta' && !record.isNonWorking"
+                                        class="action-btn text-warning" style="font-size: 0.75rem; padding: 0.25rem 0.5rem;"
+                                        title="Agregar/Editar Observación"
+                                        (click)="startEditObservation(record)">
+                                        <i class="fa-solid fa-pen-to-square"></i>
+                                    </button>
+                                </div>
+                                <!-- Modo edición -->
+                                <div *ngIf="editingObservationRecord === record" style="display: flex; flex-direction: column; gap: 0.4rem;">
+                                    <input type="text" [(ngModel)]="inlineObservationText"
+                                        placeholder="Ej: Permiso médico, Vacaciones..."
+                                        style="padding: 0.4rem 0.6rem; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.8rem; width: 100%;">
+                                    <div style="display: flex; gap: 0.3rem;">
+                                        <button class="btn-submit" style="font-size: 0.7rem; padding: 0.25rem 0.6rem; background: #10b981;"
+                                            (click)="saveInlineObservation(record)">
+                                            <i class="fa-solid fa-check"></i> Guardar
+                                        </button>
+                                        <button class="btn-cancel" style="font-size: 0.7rem; padding: 0.25rem 0.6rem;"
+                                            (click)="cancelEditObservation()">
+                                            Cancelar
+                                        </button>
+                                    </div>
+                                </div>
                             </td>
                         </tr>
                     </tbody>
