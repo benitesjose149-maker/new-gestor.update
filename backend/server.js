@@ -10,7 +10,7 @@ import { fileURLToPath } from 'url';
 import http from 'http';
 import dniRoutes from './routes/dniRoutes.js';
 import gmailRoutes from './integrations/gmailRoutes.js';
-import demoRoutes from './routes/endpoint-demo-test.js';
+// import demoRoutes from './routes/endpoint-demo-test.js'; // TODO: crear este archivo
 
 const app = express();
 app.set('trust proxy', true);
@@ -69,7 +69,7 @@ app.use(express.static(distPath));
 
 app.use('/api/reniec', dniRoutes);
 app.use('/api', gmailRoutes);
-app.use('/api/whmcs-demo', demoRoutes);
+// app.use('/api/whmcs-demo', demoRoutes); // TODO: descomentar cuando exista el archivo
 
 app.get('/api/dashboard/stats', async (req, res) => {
     try {
