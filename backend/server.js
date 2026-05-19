@@ -3072,7 +3072,7 @@ app.get('/api/attendance/history/:idEmployee', async (req, res) => {
         const result = await pool.request()
             .input('idEmp', mssql.Int, idEmployee)
             .query(`
-                SELECT *, ISNULL(OBSERVATIONS, '') as OBSERVATIONS FROM ATTENDANCE_DAILY_REPORTS 
+                SELECT * FROM ATTENDANCE_DAILY_REPORTS 
                 WHERE ID_EMPLOYEE = @idEmp 
                 ORDER BY DATE DESC
             `);

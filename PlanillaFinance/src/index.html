@@ -120,7 +120,6 @@
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('/sw.js').catch(() => { });
     }
-    // Remove splash from DOM after animation
     setTimeout(() => {
       const s = document.getElementById('splash-screen');
       if (s) s.remove();
