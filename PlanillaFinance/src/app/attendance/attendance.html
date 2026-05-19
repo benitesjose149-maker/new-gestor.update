@@ -179,7 +179,7 @@
                                 <!-- Modo lectura -->
                                 <div *ngIf="editingObservationRecord !== record"
                                     style="display: flex; align-items: center; gap: 0.5rem;">
-                                    <span *ngIf="record.observations" style="font-size: 0.8rem; color: #64748b;">{{
+                                    <span *ngIf="record.observations" style="font-size: 0.8rem; color: #64748b; white-space: pre-line;">{{
                                         record.observations }}</span>
                                     <button *ngIf="(record.status === 'Falta' || record.status === 'FALTA') && !record.isNonWorking"
                                         class="action-btn text-warning"
@@ -191,9 +191,10 @@
                                 <!-- Modo edición -->
                                 <div *ngIf="editingObservationRecord === record"
                                     style="display: flex; flex-direction: column; gap: 0.4rem;">
-                                    <input type="text" [(ngModel)]="inlineObservationText"
+                                    <textarea [(ngModel)]="inlineObservationText"
                                         placeholder="Ej: Permiso médico, Vacaciones..."
-                                        style="padding: 0.4rem 0.6rem; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.8rem; width: 100%;">
+                                        rows="3"
+                                        style="padding: 0.4rem 0.6rem; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.8rem; width: 100%; resize: vertical;"></textarea>
                                     <div style="display: flex; gap: 0.3rem;">
                                         <button class="btn-submit"
                                             style="font-size: 0.7rem; padding: 0.25rem 0.6rem; background: #10b981;"
