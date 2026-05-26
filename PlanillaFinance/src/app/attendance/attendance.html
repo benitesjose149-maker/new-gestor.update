@@ -161,7 +161,7 @@
                             [class.row-absent]="record.status === 'Falta' && !record.isNonWorking">
                             <td class="date-col">
                                 <strong>{{ record.date | date:'dd MMM':'UTC' }}</strong>
-                                <small>{{ record.date | date:'EEEE':'UTC' }}</small>
+                                <small>{{ record.date | date:'EEEE':'UTC' }} {{ getDayOfWeekInSpanish(record.date) }}</small>
                             </td>
                             <td>{{ record.clockIn }}</td>
                             <td>{{ record.clockOut }}</td>

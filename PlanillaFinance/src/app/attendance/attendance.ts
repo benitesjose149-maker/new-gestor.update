@@ -458,6 +458,14 @@ export class AttendanceComponent implements OnInit {
         }
     }
 
+    getDayOfWeekInSpanish(dateStr: any): string {
+        if (!dateStr) return '';
+        const date = new Date(dateStr);
+        const days = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+        const dayIndex = date.getUTCDay();
+        return `(${days[dayIndex]})`;
+    }
+
     getInitials(name: string): string {
         if (!name) return '??';
         return name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
