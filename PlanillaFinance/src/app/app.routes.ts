@@ -4,10 +4,9 @@ import { DashboardComponent } from './dashboard/dashboard';
 import { GestionEmpleadosComponent } from './employees/employees';
 import { ArchivedEmployeesComponent } from './archived-employees/archived-employees';
 import { LayoutComponent } from './layout/layout';
-
 import { PlanillaComponent } from './planilla/planilla';
 import { MovimientosComponent } from './Movements/movements';
-
+import { ProveedoresComponent } from './proveedores-page/proveedores';
 import { HistorialPagoComponent } from './historial-pago/historial-pago';
 import { FinanceDashboardComponent } from './finance-dashboard/finance-dashboard';
 import { SettingsPermissionsComponent } from './settings/settings-permissions';
@@ -33,6 +32,7 @@ export const routes: Routes = [
             { path: 'vacations', component: VacationsComponent, title: 'Vacaciones | HWPeru' },
             { path: 'settings', component: SettingsPermissionsComponent, title: 'Configuración | HWPeru' },
             { path: 'attendance', component: AttendanceComponent, title: 'Asistencia | HWPeru' },
+            { path: 'proveedores', component: ProveedoresComponent, title: 'Proveedores | HWPeru' },
             { path: '', redirectTo: '/login', pathMatch: 'full' },
         ]
     }
