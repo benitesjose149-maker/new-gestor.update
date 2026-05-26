@@ -13,6 +13,7 @@ interface Vacation {
     DIAS_UTILES: number;
     ESTADO: string;
     OBSERVACIONES: string;
+    TIPO_CONTROL?: string;
     NOMBRE?: string;
     APELLIDOS?: string;
 }
@@ -112,6 +113,7 @@ export class VacationsComponent implements OnInit {
             fechaFin: new Date().toISOString().split('T')[0],
             diasUtiles: 0,
             estado: 'PROGRAMADO',
+            tipoControl: 'SISTEMATICO',
             observaciones: ''
         };
     }
@@ -126,6 +128,7 @@ export class VacationsComponent implements OnInit {
                 fechaFin: this.formatDate(vacation.FECHA_FIN),
                 diasUtiles: vacation.DIAS_UTILES,
                 estado: vacation.ESTADO,
+                tipoControl: vacation.TIPO_CONTROL || 'SISTEMATICO',
                 observaciones: vacation.OBSERVACIONES
             };
         } else {
@@ -169,6 +172,7 @@ export class VacationsComponent implements OnInit {
                 fechaFin: this.currentVacation.fechaFin,
                 diasUtiles: this.currentVacation.diasUtiles,
                 estado: this.currentVacation.estado,
+                tipoControl: this.currentVacation.tipoControl,
                 observaciones: this.currentVacation.observaciones
             };
 
@@ -247,6 +251,7 @@ export class VacationsComponent implements OnInit {
 
     getDisplayStatus(vac: Vacation): string {
         if (vac.ESTADO === 'CANCELADO') return 'CANCELADO';
+        if (vac.TIPO_CONTROL === 'MANUAL') return vac.ESTADO || 'PROGRAMADO';
 
         const now = new Date();
         const year = now.getFullYear();

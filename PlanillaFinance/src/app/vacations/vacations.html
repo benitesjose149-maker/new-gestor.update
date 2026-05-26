@@ -50,9 +50,14 @@
                     </td>
                     <td class="text-center"><strong>{{vac.DIAS_UTILES}}</strong></td>
                     <td>
-                        <span class="badge" [ngClass]="getDisplayStatus(vac).toLowerCase()">
-                            {{getDisplayStatus(vac)}}
-                        </span>
+                        <div class="status-container" style="display: flex; flex-direction: column; align-items: center; gap: 4px;">
+                            <span class="badge" [ngClass]="getDisplayStatus(vac).toLowerCase()">
+                                {{getDisplayStatus(vac)}}
+                            </span>
+                            <span class="control-type-label" style="font-size: 0.65rem; color: #9ca3af; text-transform: uppercase; font-weight: 600; letter-spacing: 0.02em;">
+                                {{ vac.TIPO_CONTROL === 'MANUAL' ? 'Manual' : 'Sistemático' }}
+                            </span>
+                        </div>
                     </td>
                     <td><span class="obs-text">{{vac.OBSERVACIONES || '-'}}</span></td>
                     <td class="actions-cell">
@@ -111,11 +116,19 @@
                         required>
                 </div>
                 <div class="form-group">
-                    <label>Estado</label>
-                    <select [(ngModel)]="currentVacation.estado" name="estado" class="form-control">
-                        <option *ngFor="let st of estados" [value]="st">{{st}}</option>
+                    <label>Tipo de Control</label>
+                    <select [(ngModel)]="currentVacation.tipoControl" name="tipoControl" class="form-control">
+                        <option value="SISTEMATICO">Sistemático (Auto)</option>
+                        <option value="MANUAL">Manual</option>
                     </select>
                 </div>
+            </div>
+
+            <div class="form-group">
+                <label>Estado</label>
+                <select [(ngModel)]="currentVacation.estado" name="estado" class="form-control">
+                    <option *ngFor="let st of estados" [value]="st">{{st}}</option>
+                </select>
             </div>
 
             <div class="form-group">

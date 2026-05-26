@@ -2517,6 +2517,14 @@ app.get('/api/vacaciones', async (req, res) => {
         const pool = await poolPlanilla;
         const employeeId = req.query.employeeId;
 
+        // Auto-sincronizar columna TIPO_CONTROL si no existe en la BD
+        await pool.request().query(`
+            IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('EMPLOYEE_VACATIONS') AND name = 'TIPO_CONTROL')
+            BEGIN
+                ALTER TABLE EMPLOYEE_VACATIONS ADD TIPO_CONTROL VARCHAR(20) DEFAULT 'SISTEMATICO' NOT NULL;
+            END
+        `);
+
         let query = `
             SELECT v.*, e.NOMBRE, e.APELLIDOS 
             FROM EMPLOYEE_VACATIONS v
@@ -2550,10 +2558,11 @@ app.post('/api/vacaciones', async (req, res) => {
         request.input('days', mssql.Int, data.diasUtiles);
         request.input('status', mssql.VarChar(50), data.estado || 'PROGRAMADO');
         request.input('obs', mssql.NVarChar(mssql.MAX), data.observaciones || '');
+        request.input('tipoControl', mssql.VarChar(20), data.tipoControl || 'SISTEMATICO');
 
         await request.query(`
-            INSERT INTO EMPLOYEE_VACATIONS (ID_EMPLOYEE, FECHA_INICIO, FECHA_FIN, DIAS_UTILES, ESTADO, OBSERVACIONES, CREATED_AT, UPDATED_AT)
-            VALUES (@empId, @start, @end, @days, @status, @obs, GETDATE(), GETDATE())
+            INSERT INTO EMPLOYEE_VACATIONS (ID_EMPLOYEE, FECHA_INICIO, FECHA_FIN, DIAS_UTILES, ESTADO, OBSERVACIONES, TIPO_CONTROL, CREATED_AT, UPDATED_AT)
+            VALUES (@empId, @start, @end, @days, @status, @obs, @tipoControl, GETDATE(), GETDATE())
         `);
 
         res.status(201).json({ success: true, message: 'Vacaciones registradas correctamente' });
@@ -2575,6 +2584,7 @@ app.put('/api/vacaciones/:id', async (req, res) => {
         request.input('days', mssql.Int, data.diasUtiles);
         request.input('status', mssql.VarChar(50), data.estado);
         request.input('obs', mssql.NVarChar(mssql.MAX), data.observaciones || '');
+        request.input('tipoControl', mssql.VarChar(20), data.tipoControl || 'SISTEMATICO');
 
         await request.query(`
             UPDATE EMPLOYEE_VACATIONS 
@@ -2583,6 +2593,7 @@ app.put('/api/vacaciones/:id', async (req, res) => {
                 DIAS_UTILES = @days,
                 ESTADO = @status,
                 OBSERVACIONES = @obs,
+                TIPO_CONTROL = @tipoControl,
                 UPDATED_AT = GETDATE()
             WHERE ID = @id
         `);
