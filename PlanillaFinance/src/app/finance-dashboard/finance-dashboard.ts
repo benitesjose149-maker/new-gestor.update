@@ -176,13 +176,11 @@ export class FinanceDashboardComponent implements OnInit {
                         (item.cuentaDebito || '').toLowerCase().includes('izipay');
 
                     if (isIzipay) {
-                        if (item.estadoLocal !== 'Conciliado' && item.estadoLocal !== 'Pagado') {
-                            const bancoCaja = this.bancos.find((b: any) => b.name.toLowerCase().includes('caja'));
-                            if (!item.banco) item.banco = bancoCaja ? bancoCaja.name : 'CAJA VIRTUAL';
+                        const bancoCaja = this.bancos.find((b: any) => b.name.toLowerCase().includes('caja'));
+                        if (!item.banco) item.banco = bancoCaja ? bancoCaja.name : 'CAJA VIRTUAL';
 
-                            const ctaIzipay = this.debitAccounts.find((d: any) => d.name.toLowerCase().includes('izipay'));
-                            item.cuentaDebito = ctaIzipay ? ctaIzipay.name : 'Izipay por cobrar';
-                        }
+                        const ctaIzipay = this.debitAccounts.find((d: any) => d.name.toLowerCase().includes('izipay'));
+                        item.cuentaDebito = ctaIzipay ? ctaIzipay.name : 'Izipay por cobrar';
                     } else {
                         if (!item.banco && item.WHMCS_InvoiceID) {
                             this.autoEscanearPDF(item, item.WHMCS_InvoiceID);
